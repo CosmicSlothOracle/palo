@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teilnahmeformular</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background: #f6f6f6; margin: 0; }
+        .form-container { max-width: 400px; margin: 2rem auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); padding: 2rem; }
+        h2 { text-align: center; margin-bottom: 2rem; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 0.5rem; }
+        input, textarea, select { width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; }
+        textarea { min-height: 80px; }
+        button { width: 100%; padding: 0.7rem; background: #E67E22; color: #fff; border: none; border-radius: 5px; font-size: 1rem; cursor: pointer; }
+        button:disabled { background: #ccc; }
+        .message { margin-top: 1rem; text-align: center; font-size: 0.95rem; }
+        .error { color: #c0392b; }
+        .success { color: #27ae60; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Teilnahmeformular</h2>
+        <form id="participation-form" autocomplete="off">
+            <div class="form-group">
+                <label for="name">Name *</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">E-Mail (optional)</label>
+                <input type="email" id="email" name="email">
+            </div>
+            <div class="form-group">
+                <label for="message">Nachricht (optional)</label>
+                <textarea id="message" name="message"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="banner">Banner auswählen (optional)</label>
+                <select id="banner" name="banner">
+                    <option value="">-- Kein Banner --</option>
+                </select>
+            </div>
+            <button type="submit" id="submit-btn">Teilnehmen</button>
+        </form>
+        <div class="message" id="form-message"></div>
+    </div>
+    <script>
+    const API_BASE = '';
+    const form = document.getElementById('participation-form');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const messageInput = document.getElementById('message');
+    const bannerSelect = document.getElementById('banner');
+    const submitBtn = document.getElementById('submit-btn');
+    const messageDiv = document.getElementById('form-message');
+
+    async function loadBanners() {
+        try {
+            const res = await fetch(`${API_BASE}/api/banners`);
+            const data = await res.json();
+            if (data.banners && data.banners.length > 0) {
+                data.banners.forEach(url => {
+                    const filename = url.split('/').pop();
+                    const option = document.createElement('option');
+                    option.value = filename;
+                    option.textContent = filename;
+                    bannerSelect.appendChild(option);
+                });
+            }
+        } catch (err) {
+            // Keine Banner laden, Option bleibt leer
+        }
+    }
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        messageDiv.textContent = '';
+        submitBtn.disabled = true;
+        const name = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        const message = messageInput.value.trim();
+        const banner = bannerSelect.value;
+        if (!name) {
+            messageDiv.textContent = 'Name ist erforderlich.';
+            messageDiv.className = 'message error';
+            submitBtn.disabled = false;
+            return;
+        }
+        try {
+            const res = await fetch(`${API_BASE}/api/participants`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, message, banner })
+            });
+            if (res.ok) {
+                messageDiv.textContent = 'Teilnahme erfolgreich übermittelt!';
+                messageDiv.className = 'message success';
+                form.reset();
+            } else {
+                const err = await res.json();
+                messageDiv.textContent = err.error || 'Übermittlung fehlgeschlagen.';
+                messageDiv.className = 'message error';
+            }
+        } catch (err) {
+            messageDiv.textContent = 'Server nicht erreichbar.';
+            messageDiv.className = 'message error';
+        }
+        submitBtn.disabled = false;
+    });
+
+    // Banner-Liste laden
+    loadBanners();
+    </script>
+    <script src="/js/chatbotKey.js"></script>
+    <script defer src="/js/chatbot.js"></script>
+</body>
+</html>

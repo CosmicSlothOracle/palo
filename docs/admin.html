@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <!-- Replace Tailwind link with official CDN script -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto py-8 px-4">
+    <h1 class="text-3xl font-bold mb-6 text-center">Admin Dashboard</h1>
+
+    <!-- Login Panel -->
+    <div id="login-panel" class="max-w-md mx-auto bg-white p-6 rounded shadow">
+      <h2 class="text-xl font-semibold mb-4">Login</h2>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1" for="username">Username</label>
+        <input id="username" name="username" type="text" autocomplete="username" class="w-full border px-3 py-2 rounded" />
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1" for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" class="w-full border px-3 py-2 rounded" />
+      </div>
+      <button id="login-btn" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Login</button>
+      <p id="login-error" class="text-red-500 text-sm mt-2 hidden"></p>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div id="dashboard" class="hidden">
+      <div class="flex justify-end mb-4">
+        <button id="logout-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Logout</button>
+      </div>
+      <div class="mb-6">
+        <nav class="flex space-x-4">
+          <button data-tab="events" class="tab-btn bg-blue-600 text-white px-4 py-2 rounded">Events</button>
+          <button data-tab="participants" class="tab-btn bg-gray-300 text-gray-800 px-4 py-2 rounded">Participants</button>
+        </nav>
+      </div>
+
+      <!-- Events Tab -->
+      <div id="tab-events" class="tab-content">
+        <h2 class="text-2xl font-semibold mb-4">Events</h2>
+        <div class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-2">
+          <input id="event-title" type="text" placeholder="Event Titel" class="border p-2 rounded col-span-1 md:col-span-1" />
+          <input id="banner-file" name="banner" type="file" accept="image/*" class="border p-2 rounded col-span-1" autocomplete="off" />
+          <button id="create-event-btn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 col-span-1">Create Event</button>
+        </div>
+        <div id="events-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+
+      <!-- Participants Tab -->
+      <div id="tab-participants" class="tab-content hidden">
+        <h2 class="text-2xl font-semibold mb-4">Participants</h2>
+        <div class="flex flex-col md:flex-row md:items-center gap-2 mb-4">
+          <select id="participants-event-select" class="border p-2 rounded flex-1 md:flex-none md:w-64"></select>
+          <button id="export-csv-btn" class="bg-blue-500 text-white px-3 py-1 rounded">Export CSV</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white shadow rounded">
+            <thead>
+              <tr class="bg-gray-200 text-left text-sm font-medium">
+                <th class="px-4 py-2">Name</th>
+                <th class="px-4 py-2">Email</th>
+                <th class="px-4 py-2">Message</th>
+                <th class="px-4 py-2">Timestamp</th>
+              </tr>
+            </thead>
+            <tbody id="participants-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/admin_dashboard.js"></script>
+</body>
+</html>

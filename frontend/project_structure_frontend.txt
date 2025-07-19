@@ -1,0 +1,45 @@
+Auflistung der Ordnerpfade für Volume Windows 
+Volumeseriennummer : D4B4-B5A2
+C:.
+|   index.html
+|   project_structure.txt
+|   README.md
+|   translation_validator.py
+|   
++---.github
+|   \---workflows
+|           static.yml
+|           
++---admin
+|       dashboard.html
+|       
++---backend
+|       app.py
+|       requirements.txt
+|       
++---css
+|       admin.css
+|       style.css
+|       
++---frontend
+|       project_structure_frontend.txt
+|       
++---img
+|       kosge_logo.svg
+|       
++---js
+|       admin-dashboard.js
+|       admin.js
+|       main.js
+|       
++---lang
+|       ar.html
+|       einfach.html
+|       en.html
+|       language_config.json
+|       ru.html
+|       tr.html
+|       
+\---translate_tool
+        translate_html.py
+        

@@ -1,0 +1,20 @@
+# Environment
+.env
+
+# Ignore node dependencies and build outputs
+node_modules/
+frontend/node_modules/
+netlify/functions/node_modules/
+
+# Ignore Vite build output
+frontend/public/
+
+# Ignore Python cache
+__pycache__/
+*.py[cod]
+
+docs/react/
+# Ignore stray temp files
+hould have an id or name attribute
+page failed to load a stylesheet from a URL.
+t

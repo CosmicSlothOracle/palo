@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Kollektiv für solidarische Gesundheit e.V." />
+    <title>KOSGE - Kollektiv für solidarische Gesundheit e.V.</title>
+    <!-- Schriftart Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <!-- Translation Library -->
+    <script src="https://cdn.jsdelivr.net/npm/i18next@21.6.14/i18next.min.js"></script>
+    <style>
+        .logo-container {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        .logo {
+            max-width: 250px;
+            min-width: 220px;
+            height: auto;
+            object-fit: contain;
+            filter: none;
+            transition: all 0.3s ease;
+        }
+
+        .primary-logo {
+            opacity: 1;
+        }
+
+        .secondary-logo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+        }
+
+        .logo-container:hover .primary-logo {
+            opacity: 0;
+            transform: scale(1.05);
+        }
+
+        .logo-container:hover .secondary-logo {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        /* Add responsive adjustments */
+        @media screen and (max-width: 768px) {
+            .logo {
+                max-width: 200px;
+                min-width: 180px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .logo {
+                max-width: 180px;
+                min-width: 150px;
+            }
+        }
+
+        /* Add styles for privacy modal */
+        .privacy-policy {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 15px;
+        }
+
+        /* Customize scrollbar */
+        .privacy-policy::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .privacy-policy::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .privacy-policy::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 4px;
+        }
+
+        .privacy-policy::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+
+        /* Footer styles */
+        .footer-links {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .footer-links a {
+            color: var(--light-text);
+            text-decoration: none;
+            margin: 0 15px;
+            transition: color 0.3s ease;
+            display: inline-block;
+        }
+
+        .footer-links a:hover {
+            color: var(--secondary-color);
+        }
+
+        .footer-links a i {
+            margin-right: 5px;
+        }
+
+        @media screen and (max-width: 768px) {
+            .footer-links {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .footer-links a {
+                margin: 5px 0;
+            }
+        }
+
+        /* Remove mobile nav styles */
+        .mobile-nav {
+            display: none !important;
+        }
+
+        /* Participation modal styling */
+        .participation-modal {
+            max-width: 600px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .participation-modal h2 {
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #selected-banner-preview {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 4/3;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 2px solid var(--primary-color);
+        }
+
+        #selected-banner-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background-color: #f8f8f8;
+        }
+
+        #participation-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #participation-form input,
+        #participation-form textarea {
+            padding: 12px;
+            border: 1px solid var(--primary-color);
+            border-radius: 6px;
+            font-family: var(--font);
+            font-size: 16px;
+        }
+
+        #participation-form textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* Fix participation form buttons styling */
+        #participation-form .button-container {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        #participation-form button[type="submit"] {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+            flex: 1;
+        }
+
+        #participation-form button[type="submit"]:hover {
+            background-color: var(--accent-color);
+        }
+
+        #participation-form button#cancel-participation {
+            background-color: #ccc;
+            color: #333;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+            flex: 1;
+        }
+
+        #participation-form button#cancel-participation:hover {
+            background-color: #aaa;
+        }
+
+        .banner {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            aspect-ratio: 4/3;
+            width: 100%;
+        }
+
+        .banner:hover {
+            transform: translateY(-5px);
+        }
+
+        .banner::after {
+            content: "Klicken für Teilnahme";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            text-align: center;
+        }
+
+        .banner:hover::after {
+            opacity: 1;
+        }
+
+        /* Update banner image aspect ratio to 4:3 */
+        .banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Smoke animation for modal closing */
+        @keyframes smokeEffect {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0);
+            }
+            30% {
+                opacity: 0.9;
+                transform: scale(1.02);
+                filter: blur(1px);
+            }
+            60% {
+                opacity: 0.6;
+                transform: scale(1.05) translateY(-20px);
+                filter: blur(5px);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.1) translateY(-30px);
+                filter: blur(10px);
+            }
+        }
+
+        .modal.smoke-close {
+            animation: smokeEffect 0.8s ease-out forwards;
+            pointer-events: none;
+        }
+
+        /* Loading spinner for form submission */
+        .spinner {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--secondary-color);
+            animation: spin 1s ease-in-out infinite;
+            z-index: 10;
+        }
+
+        @keyframes spin {
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        .modal-content.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .loading-message {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .participation-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .participation-entry {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .participation-entry strong {
+            color: var(--secondary-color);
+        }
+
+        .participation-entry p {
+            margin: 5px 0;
+        }
+
+        .no-participants {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background Slideshow -->
+    <div class="background-slideshow">
+        <img src="https://link.storjshare.io/raw/jugzctopkbs4vqzqtx756s2jmw3q/geko/Diashow/dia1.png"
+        alt="Hintergrundbild 1">
+        <img src="https://link.storjshare.io/raw/juiieutbu2jnjxxb4cgxl3waxrbq/geko/Diashow/dia2.png"
+        alt="Hintergrundbild 2">
+    </div>
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <header role="banner">
+            <div class="logo-container">
+                <img src="https://link.storjshare.io/raw/jxeghfjuomgqgf536ls26sw3tazq/geko/KOSGE%202.png"
+                    alt="Logo Kollektiv für solidarische Gesundheit e.V."
+                    class="logo primary-logo" />
+                <img src="https://link.storjshare.io/raw/juztch2undb536if7f344odv6o4q/geko/logo2.png"
+                    alt="Alternatives Logo Kollektiv für solidarische Gesundheit e.V."
+                    class="logo secondary-logo" />
+            </div>
+            <div class="language-controls">
+                <label for="language" class="visually-hidden" data-translate="language-label">Sprache wählen</label>
+                <select id="language" onchange="changeLanguage(this.value);">
+                    <option value="index.html">Deutsch 🇩🇪</option>
+                    <option value="lang/en.html">English 🇬🇧</option>
+                    <option value="lang/tr.html">Türkçe 🇹🇷</option>
+                    <option value="lang/ru.html">Русский 🇷🇺</option>
+                    <option value="lang/ar.html">العربية 🇸🇦</option>
+                    <option value="lang/einfach.html">Einfache Sprache 🔤</option>
+                </select>
+            </div>
+        </header>
+        <!-- Desktop Navigation -->
+        <nav role="navigation" aria-label="Hauptnavigation">
+            <ul class="main-nav">
+                <li><a href="#start" data-translate="nav-start">Start</a></li>
+                <li><a href="#about" data-translate="nav-about">Wer wir sind</a></li>
+                <li><a href="#concept" data-translate="nav-concept">Das Konzept</a></li>
+                <li><a href="#goal" data-translate="nav-goal">Unser Ziel</a></li>
+                <li><a href="#events" data-translate="nav-events">Veranstaltungen</a></li>
+                <li><a href="#join" data-translate="nav-join">Mitmachen</a></li>
+                <li><a href="#contact" data-translate="nav-contact">Kontakt & Impressum</a></li>
+            </ul>
+        </nav>
+        <!-- Mobile Navigation -->
+        <style>
+            /* Remove mobile nav styles */
+            .mobile-nav {
+                display: none !important;
+            }
+        </style>
+        <main id="main-content">
+            <section id="start">
+                <div class="section-title-container">
+                    <h2 data-translate="vision-title">Vision</h2>
+                </div>
+                <h1 data-translate="start-title">Kollektiv für solidarische Gesundheit e.V.</h1>
+                <p data-translate="vision-description">Ein gesundheitsfördernder Ort der Begegnung, des Austauschs und der Vernetzung für alle Menschen in Lichtenberg. Mit Café, Räumen für Workshops, Gruppen und Beratungen zur Stärkung des gemeinschaftlichen Wohlbefindens und der sozialen Teilhabe.</p>
+                <img class="section-arrow"
+                src="https://link.storjshare.io/raw/jx4zolve64kgmj27jdwq3fh4otka/geko/arrow.png" alt="Pfeil">
+            </section>
+            <section id="about">
+                <div class="section-title-container">
+                    <h2>Wer wir sind</h2>
+                </div>
+                <h2 data-translate="about-title">Wer wir sind</h2>
+                <p data-translate="about-description">Wir sind eine Gruppe von Menschen, die den gemeinsamen Wunsch
+                    haben, die gesundheitliche Versorgung im Kiez ganzheitlicher und sozialer zu gestalten. Dazu
+                    arbeiten wir als Kollektiv für solidarische Gesundheit e.V. seit einiger Zeit an der Umsetzung eines
+                    Stadtteilgesundheitszentrums in Berlin. Hierbei orientieren wir uns an bereits vorhandenen
+                    Strukturen wie dem GeKo Neukölln und der Poliklinik Veddel in Hamburg, mit denen wir über das
+                    deutschlandweite Poliklinik-Syndikat in Austausch stehen.</p>
+                <img class="section-arrow"
+                src="https://link.storjshare.io/raw/jx4zolve64kgmj27jdwq3fh4otka/geko/arrow.png" alt="Pfeil">
+            </section>
+            <section id="concept">
+                <div class="section-title-container">
+                    <h2>Das Konzept</h2>
+                </div>
+                <h2 data-translate="concept-title">Das Konzept</h2>
+                <p data-translate="concept-description">Körper und Seele, wo und wie wir leben und unser Platz in der
+                    Gesellschaft beeinflussen gemeinsam unsere Gesundheit und unsere Lebensqualität. Diese im Gesamten
+                    zu betrachten und zu stärken ist ein wesentlicher Aspekt unserer Idee eines
+                    Stadtteilgesundheitszentrums. Konkret bedeutet das die enge Zusammenarbeit zwischen verschiedenen
+                    Berufsgruppen innerhalb des Gesundheitswesens (wie Ärzt*innen verschiedener Fachrichtungen,
+                    Psycholog*innen, Therapeut*innen, Pflegefachkräften) sowie Sozialarbeiter*innen und Menschen, die
+                    juristisch, pädagogisch und aktivistisch tätig sind. Uns ist besonders wichtig, dass die
+                    Bewohner*innen des Kiezes dabei aktiv an der Entwicklung und Gestaltung des Zentrums beteiligt sein
+                    können, um einen Ort zu schaffen, der an ihre Bedürfnisse angepasst ist und mit diesen wächst.</p>
+                <img class="section-arrow"
+                src="https://link.storjshare.io/raw/jx4zolve64kgmj27jdwq3fh4otka/geko/arrow.png" alt="Pfeil">
+            </section>
+            <section id="goal">
+                <div class="section-title-container">
+                    <h2>Unser Ziel</h2>
+                </div>
+                <h2 data-translate="goal-title">Unser Ziel</h2>
+                <p data-translate="goal-description">Unser Ziel ist es, die Gesundheit - also das körperliche, seelische
+                    und soziale Wohlbefinden - der Bewohner*innen eines Kiezes zu fördern und einen Ort der Begegnung,
+                    des Austausches und der Vernetzung anzubieten (z.B. in Form eines Cafés, Räume für Workshops und
+                    Gruppen). Aktuell fokussiert sich unsere Arbeit auf den Aufbau erster Versorgungsangebote in
+                    Lichtenberg, perspektivisch möchten wir das Konzept eines Stadtteilgesundheitszentrums jedoch in
+                    alle
+                    Berliner Kieze bringen, in denen die Bewohner*innen dadurch besonders gestärkt werden können.</p>
+                <img class="section-arrow"
+                src="https://link.storjshare.io/raw/jx4zolve64kgmj27jdwq3fh4otka/geko/arrow.png" alt="Pfeil">
+            </section>
+            <section id="events">
+                <div class="section-title-container">
+                    <h2>Veranstaltungen</h2>
+                </div>
+                <h2 data-translate="events-title">Veranstaltungen</h2>
+                <div class="slideshow">
+                    <img src="https://link.storjshare.io/raw/jug4nxwemak2ghsh2f7y4pizhhpa/geko/selec17.jpeg" alt="Slideshow Image 1">
+                    <img src="https://link.storjshare.io/raw/juxxxawxv2vxznf45f63qkpi5syq/geko/selec6.jpeg" alt="Slideshow Image 2">
+                    <img src="https://link.storjshare.io/raw/jua2vpfy32xr4zjznyeze3mpwnvq/geko/selec8.jpeg" alt="Slideshow Image 3">
+                    <img src="https://link.storjshare.io/raw/juh5ui4xzyx535mptntpgkqcreha/geko/Selec1.jpeg" alt="Slideshow Image 4">
+                    <img src="https://link.storjshare.io/raw/jxdijpk6amsjeip7tp6n63snmida/geko/selec11.jpeg" alt="Slideshow Image 5">
+                    <img src="https://link.storjshare.io/raw/jwn7feuifmf76mrj346kykm6eqha/geko/selec19.jpeg" alt="Slideshow Image 6">
+                    <img src="https://link.storjshare.io/raw/jv3pojkv2dc6qooh3ye3msdll6hq/geko/selec3.jpeg" alt="Slideshow Image 7">
+                    <img src="https://link.storjshare.io/raw/jxkks5rlhky6cggtcfcn2poe2fza/geko/selec18.jpeg" alt="Slideshow Image 8">
+                    <img src="https://link.storjshare.io/raw/ju2ejfb3ugvu6okddgpf3y4zxjeq/geko/Selec2.jpeg" alt="Slideshow Image 9">
+                    <img src="https://link.storjshare.io/raw/jw5mq7p7mmbg72kis2gbcko4hqla/geko/selec15.jpeg" alt="Slideshow Image 10">
+                    <img src="https://link.storjshare.io/raw/jucy75rsgy7m4lfjnmizbuzckf5a/geko/selec7.jpeg" alt="Slideshow Image 11">
+                </div>
+                <img class="section-arrow"
+                src="https://link.storjshare.io/raw/jx4zolve64kgmj27jdwq3fh4otka/geko/arrow.png" alt="Pfeil">
+            </section>
+            <!-- Neue Sektion für Teilnahme (React App) -->
+            <section id="participate">
+                <div class="section-title-container">
+                    <h2>Teilnehmen</h2>
+                </div>
+                <div id="participate-root"></div>
+            </section>
+            <section id="programm">
+                <div class="section-title-container">
+                    <h2>Programm</h2>
+                </div>
+                <div class="event-images" style="display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; align-items: flex-start; margin-bottom: 32px;">
+                    <img src="https://link.storjshare.io/raw/jxwpeplx3yxtkyeltknei6yn5dtq/geko/event0.png" alt="Programm Event 0" style="max-width: 480px; width: 100%; height: auto; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);" />
+                    <img src="https://link.storjshare.io/raw/jx4klht7crd5x7grus4gnsz4s7fa/geko/event2.jpg" alt="Programm Event 1" style="max-width: 480px; width: 100%; height: auto; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);" />
+                </div>
+            </section>
+        </main>
+        <footer id="contact" role="contentinfo">
+            <h2 data-translate="contact-title">Kontakt & Impressum</h2>
+            <p><strong data-translate="contact-org">Kollektiv für solidarische Gesundheit e.V.</strong></p>
+            <p data-translate="contact-email">Email: <a href="mailto:info@kosge-berlin.de">info@kosge-berlin.de</a></p>
+            <p data-translate="contact-phone">Telefon: <a href="tel:+4915207240947">+49 1520 7240947</a></p>
+            <div class="footer-links">
+                <a href="https://geko-berlin.de" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-clinic-medical"></i> GeKo Berlin
+                </a>
+                <a href="https://www.poliklinik-syndikat.org" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-hospital-user"></i> Poliklinik Syndikat
+                </a>
+            </div>
+        </footer>
+    </div>
+    <!-- Admin Login Button -->
+    <a id="admin-login-button" href="/admin.html" class="admin-link">Admin Panel</a>
+    <!-- Admin Login Modal -->
+    <div id="admin-login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Admin Login</h2>
+            <form id="admin-login-form">
+                <div class="form-group">
+                    <label for="username">Benutzername:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Passwort:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit">Anmelden</button>
+            </form>
+        </div>
+    </div>
+    <!-- Banner Edit Modal -->
+    <div id="banner-edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Banner bearbeiten</h2>
+            <form id="banner-edit-form">
+                <input type="hidden" id="edit-banner-id">
+                <input type="text" id="banner-url" placeholder="Neue Banner-URL" required>
+                <button type="submit">Speichern</button>
+            </form>
+            <div id="banner-edit-message" style="margin-top:10px;"></div>
+        </div>
+    </div>
+    <!-- Teilnahme-Modal -->
+    <div id="participation-modal" class="modal">
+        <div class="modal-content participation-modal">
+            <span class="close">&times;</span>
+            <div class="spinner"></div>
+            <h2 data-translate="participation-title">Banner-Teilnahme</h2>
+            <div id="selected-banner-preview">
+                <img id="selected-banner-image" src="" alt="Ausgewähltes Banner">
+            </div>
+            <form id="participation-form">
+                <input type="text" id="participant-name" placeholder="Ihr Name" required>
+                <input type="email" id="participant-email" placeholder="Ihre E-Mail (optional)">
+                <textarea id="participant-message" placeholder="Ihre Nachricht (optional)"></textarea>
+                <div class="button-container">
+                    <button type="button" id="cancel-participation" data-translate="cancel-btn">Abbrechen</button>
+                    <button type="submit" data-translate="participate-btn">Teilnehmen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Admin Teilnahme-Übersicht Modal -->
+    <div id="admin-participation-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Teilnahmen</h2>
+            <div id="participation-list">
+                <!-- Teilnahmen werden hier dynamisch eingefügt -->
+            </div>
+        </div>
+    </div>
+    <!-- Datenschutz Modal -->
+    <div id="privacy-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="privacy-policy">
+                <h3>Datenschutzerklärung</h3>
+                <h4>1. Grundlegende Informationen</h4>
+                <p>Der Kollektiv für solidarische Gesundheit e.V. (KoSGe) nimmt den Schutz Ihrer persönlichen Daten sehr
+                    ernst. Diese Datenschutzerklärung informiert Sie über die Verarbeitung Ihrer personenbezogenen
+                    Daten.</p>
+                <h4>2. Verantwortliche Stelle</h4>
+                <p>Verantwortlich im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:</p>
+                <p>Kollektiv für solidarische Gesundheit e.V.<br>
+                    [Adresse einfügen]<br>
+                    [Kontaktinformationen]</p>
+                <h4>3. Welche Daten werden verarbeitet?</h4>
+                <ul>
+                    <li>Kontaktformular-Eingaben</li>
+                    <li>IP-Adresse bei Websitebesuch</li>
+                    <li>Freiwillig bereitgestellte personenbezogene Daten</li>
+                </ul>
+                <h4>4. Zweck der Datenverarbeitung</h4>
+                <p>Ihre Daten werden ausschließlich zur Kommunikation und Erfüllung satzungsgemäßer Vereinszwecke
+                    verwendet.</p>
+                <h4>5. Ihre Rechte</h4>
+                <ul>
+                    <li>Recht auf Auskunft</li>
+                    <li>Recht auf Berichtigung</li>
+                    <li>Recht auf Löschung</li>
+                    <li>Recht auf Einschränkung der Verarbeitung</li>
+                </ul>
+                <h4>6. Kontakt bei Datenschutzfragen</h4>
+                <p>Bei Fragen zum Datenschutz kontaktieren Sie uns unter: [Kontakt-E-Mail]</p>
+            </div>
+        </div>
+    </div>
+    <!-- Footer mit Datenschutz-Link -->
+    <footer>
+        <p>&copy; 2024 Kollektiv für solidarische Gesundheit e.V.
+            <a href="#" id="privacy-link">Datenschutz</a>
+        </p>
+    </footer>
+    <!-- Script for dynamic background slideshow -->
+    <script>
+        // This function makes it easy to add more images to the background slideshow
+        function addBackgroundImage(imageUrl) {
+            const slideshow = document.querySelector('.background-slideshow');
+            if (slideshow) {
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.alt = 'Hintergrundbild';
+                slideshow.appendChild(img);
+
+                // Update animation delays for all images
+                const images = slideshow.querySelectorAll('img');
+                const totalDuration = 12; // seconds
+                const individualDuration = totalDuration / images.length;
+
+                images.forEach((img, index) => {
+                    img.style.animationDelay = `${ index * individualDuration }s`;
+                });
+            }
+        }
+
+        // Example of how to add more images in the future:
+        // addBackgroundImage('https://link.storjshare.io/raw/your-new-image-url');
+
+        // Hero Slideshow functionality
+        document.addEventListener('DOMContentLoaded', function () {
+            const heroSlides = document.querySelectorAll('.hero-slide');
+            let currentSlide = 0;
+
+            function showSlide(index) {
+                // Hide all slides
+                heroSlides.forEach(slide => {
+                    slide.classList.remove('active');
+                });
+
+                // Show the current slide
+                heroSlides[index].classList.add('active');
+            }
+
+            function nextSlide() {
+                currentSlide = (currentSlide + 1) % heroSlides.length;
+                showSlide(currentSlide);
+            }
+
+            // Initialize slideshow
+            showSlide(currentSlide);
+
+            // Change slide every 6 seconds
+            setInterval(nextSlide, 6000);
+        });
+    </script>
+    <!-- Admin Login and Banner Management -->
+    <script>
+        // Admin Login and Banner Management
+        const ADMIN_USERNAME = 'admin';
+        const ADMIN_PASSWORD = 'kosge2024!';
+        let isAdminLoggedIn = false;
+
+        // Admin Login Modal
+        const adminLoginModal = document.getElementById('admin-login-modal');
+        const bannerEditModal = document.getElementById('banner-edit-modal');
+        const adminLoginForm = document.getElementById('admin-login-form');
+        const bannerEditForm = document.getElementById('banner-edit-form');
+        const editBannerBtns = document.querySelectorAll('.edit-banner-btn');
+        const closeButtons = document.querySelectorAll('.close');
+
+        // Close modal functions
+        closeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.closest('.modal').style.display = 'none';
+            });
+        });
+
+        // Füge einen Dashboard-Button hinzu (zunächst versteckt)
+        const dashboardBtn = document.createElement('button');
+        dashboardBtn.id = 'dashboard-btn';
+        dashboardBtn.textContent = 'Zum Dashboard';
+        dashboardBtn.style.position = 'fixed';
+        dashboardBtn.style.top = '20px';
+        dashboardBtn.style.right = '160px';
+        dashboardBtn.style.padding = '10px 20px';
+        dashboardBtn.style.backgroundColor = 'var(--secondary-color)';
+        dashboardBtn.style.color = 'white';
+        dashboardBtn.style.border = 'none';
+        dashboardBtn.style.borderRadius = '5px';
+        dashboardBtn.style.cursor = 'pointer';
+        dashboardBtn.style.zIndex = '1001';
+        dashboardBtn.style.fontSize = '16px';
+        dashboardBtn.style.display = 'none';
+        dashboardBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+        dashboardBtn.addEventListener('click', () => {
+            window.open('admin/dashboard.html', '_blank');
+        });
+        document.body.appendChild(dashboardBtn);
+
+        // Admin Login
+        adminLoginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+                isAdminLoggedIn = true;
+                adminLoginModal.style.display = 'none';
+                // Automatically redirect to dashboard instead of showing dashboard button
+                window.location.href = 'admin/dashboard.html';
+            } else {
+                alert('Ungültige Anmeldedaten');
+            }
+        });
+
+        // Ensure edit buttons are hidden by default
+        document.addEventListener('DOMContentLoaded', () => {
+            editBannerBtns.forEach(btn => {
+                btn.style.display = 'none';
+                btn.style.visibility = 'hidden';
+                btn.style.opacity = '0';
+            });
+
+            // Load saved banner URLs on page load
+            loadBanners();
+        });
+
+        // Banner Edit Functionality
+        editBannerBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (!isAdminLoggedIn) {
+                    adminLoginModal.style.display = 'block';
+                    return;
+                }
+                const bannerId = btn.getAttribute('data-banner');
+                document.getElementById('edit-banner-id').value = bannerId;
+                const currentUrl = document.getElementById(`banner${bannerId}`).src;
+                if (currentUrl !== 'https://i.postimg.cc/vTW9F8fC/platzhalter.png') {
+                    document.getElementById('banner-url').value = currentUrl;
+                }
+                bannerEditModal.style.display = 'block';
+            });
+        });
+
+        // Banner Edit Form Submit
+        bannerEditForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const bannerId = document.getElementById('edit-banner-id').value;
+            const bannerUrl = document.getElementById('banner-url').value;
+
+            // Validate URL
+            const isValidUrl = (url) => {
+                try {
+                    new URL(url);
+                    return url.match(/\.(jpeg|jpg|gif|png)$/i) != null;
+                } catch (e) {
+                    return false;
+                }
+            };
+
+            if (!isValidUrl(bannerUrl)) {
+                document.getElementById('banner-edit-message').textContent = 'Bitte geben Sie eine gültige Bild-URL ein (PNG, JPG, JPEG, GIF)';
+                document.getElementById('banner-edit-message').style.color = 'red';
+                return;
+            }
+
+            // Save to localStorage
+            localStorage.setItem(`banner${bannerId}Url`, bannerUrl);
+
+            // Update banner image
+            document.getElementById(`banner${bannerId}`).src = bannerUrl;
+
+            // Close modal
+            bannerEditModal.style.display = 'none';
+            document.getElementById('banner-edit-message').textContent = '';
+            document.getElementById('banner-url').value = '';
+        });
+
+        // Load saved banner URLs on page load
+        function loadBanners() {
+            console.log("loadBanners function called");
+
+            for (let i = 1; i <= 4; i++) {
+                const savedUrl = localStorage.getItem(`banner${i}Url`);
+                const bannerImg = document.getElementById(`banner${i}`);
+
+                console.log(`Banner ${i}:`, {
+                    "savedUrl": savedUrl,
+                    "bannerElement": bannerImg,
+                    "bannerElementExists": !!bannerImg
+                });
+
+                if (savedUrl && bannerImg) {
+                    console.log(`Setting banner ${i} src to`, savedUrl);
+                    bannerImg.src = savedUrl;
+
+                    // Add error handling for broken image URLs
+                    bannerImg.onerror = function() {
+                        console.log(`Error loading image for banner ${i}, using placeholder`);
+                        this.src = 'https://i.postimg.cc/vTW9F8fC/platzhalter.png';
+                        this.onerror = null; // Prevent infinite loop
+                    };
+
+                    // Ensure onload event fires
+                    bannerImg.onload = function() {
+                        console.log(`Banner ${i} image loaded successfully`);
+                    };
+                }
+            }
+        }
+
+        // Ensure banners load on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBanners();
+            console.log("Banners loaded on DOMContentLoaded");
+        });
+
+        // Additionally load banners when window is fully loaded
+        window.addEventListener('load', function() {
+            loadBanners();
+            console.log("Banners loaded on window load");
+        });
+    </script>
+    <!-- Add translations for banners -->
+    <script>
+        // Add translations for banners
+        Object.keys(translations).forEach(lang => {
+            translations[lang]['banners-title'] = lang === 'en' ? 'Our Banners' :
+                lang === 'tr' ? 'Afişlerimiz' :
+                    lang === 'ru' ? 'Наши баннеры' :
+                        lang === 'ar' ? 'لافتاتنا' :
+                            'Unsere Banner';
+        });
+    </script>
+    <!-- Teilnahme-Funktionalität -->
+    <script>
+        // Teilnahme-Funktionalität
+        const banners = document.querySelectorAll('.banner');
+        const participationModal = document.getElementById('participation-modal');
+        const adminParticipationModal = document.getElementById('admin-participation-modal');
+        const participationForm = document.getElementById('participation-form');
+        const selectedBannerImage = document.getElementById('selected-banner-image');
+        const participationList = document.getElementById('participation-list');
+        const cancelParticipationBtn = document.getElementById('cancel-participation');
+        const participationModalCloseBtn = participationModal.querySelector('.close');
+
+        // Create success sound effect
+        const successSound = new Audio();
+        successSound.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAASAAAeMwAUFBQUFCIiIiIiIjAwMDAwMD09PT09PUxMTExMTFlZWVlZWWdnZ2dnZ3V1dXV1dYODg4ODg5GRkZGRkZ+fn5+fn62tra2trbq6urq6usjIyMjIyNbW1tbW1uTk5OTk5PHx8fHx8f////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAZtAAAAAAAAHjOZuuqg4AAAAAAAAAAAAAAAAABCAQIMRAABCQ0hQkMGgELf4X/ygPFr/ykIEBQQEID///0wlP//0iwHA//0TD///0xH/7ikI4Og4EMDQ4OEIQjQgGAgY/SP//0wuD//0wzhf//0w0P//0wzhf//0w0P//0wzAAAAA0gAAAAA8WCEQDAAgyGhGBwGP8H31GFgAwFfSPkP8L5D/P9JBUi/0jOAaYaB+Q/z7+Y/z5iMUG0DM6XA4EEpjvKf5w/N/48/CP5E/In6mf6v8jeOf4/+Ufx9/Pn5R/P/5E/NH8DAMWPWP/v5J/OQ9A//L/6//P/49/LP8VAChCj/7eS8X/98goGgpBwpGwgDf/0g5C//7+S/3//+yjGQD///0bqM//9AgQ//9Lf///SusarCAsYP//SWXf//S7P///UzrGfQ//p///SC7P///UgyXv/1sJv/+jwCAyIYR//1kK///WuMgG///Yuy4Pf/5woARkRP/5/88Q2XP8XCmw5//0gbL/5/JdL//zdSgGzgof9AgP8TeJy/9FQiDQEYYE//5X+bP/9AvCwQMT//oF4WCBif/6ZEfiEMT//QoRiWH6FAJgzB7E/0KAZhQoMT/+hQDMWAoDKAgIwUBnP//0CAwhQGVBAZgoDP//0CAxBQGVBAZj/QIBiCgMpgQGUBAZgoDOf//QIDCFAZUEBmP9AgHgsoDMeAymIDMFAZz//9AgMIUBlQQGY/0CAYgoB4WH/lQQGUBAZgoDP//0CAwhQGVBAZj/8qCAzBQGc//QSAeioQGUqAwHnAXA1RZQGU/0CAYAwmgIBmf9AgGAMJoCAwGAMI4CAZggIBj/9AgL5PCAwFwPBAQDP/0EAFVA4mUEBgMDiZwQGAw/9AvlAHCwQGAw/9AgHnEzhAMxYICAY//QIC+UAWCAYf+gXi4IDAYf+gXhYIDAYf/QS4IwIBh/6BeIQgMBh//+UDCw4AwAhDAAAAABJRU5ErkJggg==';
+
+        // Function to play success sound
+        function playSuccessSound() {
+            successSound.currentTime = 0;
+            successSound.volume = 0.3; // Lower volume
+            successSound.play().catch(err => console.log('Audio playback error:', err));
+        }
+
+        // Function to validate email format
+        function isValidEmail(email) {
+            if (!email) return true; // Email is optional
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Function to validate form inputs
+        function validateForm() {
+            const name = document.getElementById('participant-name').value.trim();
+            const email = document.getElementById('participant-email').value.trim();
+
+            if (!name) {
+                alert('Bitte geben Sie Ihren Namen ein.');
+                return false;
+            }
+
+            if (email && !isValidEmail(email)) {
+                alert('Bitte geben Sie eine gültige E-Mail-Adresse ein.');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Close button (×) for participation modal
+        participationModalCloseBtn.addEventListener('click', () => {
+            participationModal.style.display = 'none';
+            participationForm.reset();
+        });
+
+        // Cancel button for participation modal
+        cancelParticipationBtn.addEventListener('click', () => {
+            participationModal.style.display = 'none';
+            participationForm.reset();
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === participationModal) {
+                participationModal.style.display = 'none';
+                participationForm.reset();
+            }
+        });
+
+        // Banner Klick-Ereignis
+        banners.forEach((banner, index) => {
+            // Add interactive cursor and click event for participation
+            banner.style.cursor = 'pointer';
+            banner.addEventListener('click', () => {
+                const bannerImg = banner.querySelector('img');
+                const bannerNumber = index + 1; // Use index + 1 for banner number
+
+                // Show participation modal
+                selectedBannerImage.src = bannerImg.src;
+                participationModal.style.display = 'block';
+                participationForm.dataset.bannerNumber = bannerNumber;
+            });
+        });
+
+        // Teilnahme-Formular Absenden
+        participationForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Validate form inputs
+            if (!validateForm()) {
+                return;
+            }
+
+            const bannerNumber = participationForm.dataset.bannerNumber;
+            const name = document.getElementById('participant-name').value;
+            const email = document.getElementById('participant-email').value;
+            const message = document.getElementById('participant-message').value;
+
+            // Show loading spinner
+            const spinner = participationModal.querySelector('.spinner');
+            const modalContent = participationModal.querySelector('.modal-content');
+            spinner.style.display = 'block';
+            modalContent.classList.add('loading');
+
+            try {
+                const response = await fetch('/api/participants', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        message,
+                        banner: bannerNumber
+                    })
+                });
+
+                // Hide spinner regardless of result
+                spinner.style.display = 'none';
+                modalContent.classList.remove('loading');
+
+                if (response.ok) {
+                    // Play success sound
+                    playSuccessSound();
+
+                    // Apply smoke animation effect on successful submission
+                    participationModal.classList.add('smoke-close');
+
+                    // Wait for animation to complete before hiding the modal
+                    setTimeout(() => {
+                        participationModal.style.display = 'none';
+                        participationModal.classList.remove('smoke-close');
+                        // Show success message after modal is closed
+                        alert('Vielen Dank für Ihre Teilnahme!');
+                        // Reset form
+                        participationForm.reset();
+                    }, 800); // Match animation duration
+                } else {
+                    const error = await response.json();
+                    alert('Fehler beim Speichern der Teilnahme: ' + (error.error || 'Unbekannter Fehler'));
+                    participationModal.style.display = 'none';
+                    participationForm.reset();
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                spinner.style.display = 'none';
+                modalContent.classList.remove('loading');
+                alert('Fehler beim Speichern der Teilnahme. Bitte versuchen Sie es später erneut.');
+                participationModal.style.display = 'none';
+                participationForm.reset();
+            }
+        });
+
+        // Admin Teilnahmen anzeigen
+        async function showParticipations() {
+            if (!isAdminLoggedIn) {
+                adminLoginModal.style.display = 'block';
+                return;
+            }
+
+            try {
+                participationList.innerHTML = '<div class="loading-message">Lade Teilnahmen...</div>';
+                adminParticipationModal.style.display = 'block';
+
+                const response = await fetch('/api/participants');
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Fehler beim Laden der Teilnahmen');
+                }
+
+                participationList.innerHTML = data.participants && data.participants.length ?
+                    data.participants.map(p => `
+                        <div class="participation-entry">
+                            <strong>Banner ${p.banner}</strong>
+                            <p>Name: ${p.name}</p>
+                            ${p.email ? `<p>Email: ${p.email}</p>` : ''}
+                            ${p.message ? `<p>Nachricht: ${p.message}</p>` : ''}
+                            <p>Datum: ${new Date(p.timestamp).toLocaleString('de-DE')}</p>
+                        </div>
+                    `).join('') :
+                    '<div class="no-participants">Keine Teilnahmen vorhanden.</div>';
+            } catch (err) {
+                console.error('Error:', err);
+                participationList.innerHTML = '<div class="no-participants">Fehler beim Laden der Teilnahmen</div>';
+            }
+        }
+
+        // Füge eine Option zum Admin-Menü hinzu, um Teilnahmen zu sehen
+        document.addEventListener('DOMContentLoaded', () => {
+            // Remove Teilnahmen anzeigen button - not needed anymore
+        });
+
+        // Force reload all banner images
+        function forceReloadBanners() {
+            console.log("Forcing banner reload");
+
+            // Get all stored banner URLs
+            const storedBanners = [];
+            for (let i = 1; i <= 4; i++) {
+                const url = localStorage.getItem(`banner${i}Url`);
+                if (url) {
+                    storedBanners.push({
+                        id: i,
+                        url: url
+                    });
+                }
+            }
+
+            console.log("Stored banners:", storedBanners);
+
+            // Apply stored URLs to banner elements
+            storedBanners.forEach(bannerData => {
+                const bannerElement = document.getElementById(`banner${bannerData.id}`);
+                if (bannerElement) {
+                    // Force reload by appending a cache-busting parameter
+                    const cacheBuster = `?t=${Date.now()}`;
+                    const urlWithCacheBuster = bannerData.url.includes('?')
+                        ? `${bannerData.url}&cb=${Date.now()}`
+                        : `${bannerData.url}?cb=${Date.now()}`;
+
+                    console.log(`Applying URL to banner${bannerData.id}:`, urlWithCacheBuster);
+                    bannerElement.src = urlWithCacheBuster;
+                }
+            });
+        }
+
+        // Call the force reload function on window load
+        window.addEventListener('load', forceReloadBanners);
+    </script>
+    <!-- Füge Übersetzungen für die neuen Elemente hinzu -->
+    <script>
+        // Füge Übersetzungen für Teilnahme-Elemente hinzu
+        Object.keys(translations).forEach(lang => {
+            translations[lang]['participation-title'] = lang === 'en' ? 'Banner Participation' :
+                lang === 'tr' ? 'Afiş Katılımı' :
+                    lang === 'ru' ? 'Участие в баннере' :
+                        lang === 'ar' ? 'المشاركة في اللافتة' :
+                            'Banner-Teilnahme';
+
+            translations[lang]['participate-btn'] = lang === 'en' ? 'Participate' :
+                lang === 'tr' ? 'Katıl' :
+                    lang === 'ru' ? 'Участвовать' :
+                        lang === 'ar' ? 'المشاركة' :
+                            'Teilnehmen';
+
+            translations[lang]['cancel-btn'] = lang === 'en' ? 'Cancel' :
+                lang === 'tr' ? 'İptal' :
+                    lang === 'ru' ? 'Отмена' :
+                        lang === 'ar' ? 'إلغاء' :
+                            'Abbrechen';
+        });
+    </script>
+    <!-- removed legacy admin.js include; new dashboard lives at /admin.html -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const privacyModal = document.getElementById('privacy-modal');
+            const privacyLink = document.getElementById('privacy-link');
+            const closeBtn = document.querySelector('#privacy-modal .close');
+
+            privacyLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                privacyModal.style.display = 'block';
+            });
+
+            closeBtn.addEventListener('click', function () {
+                privacyModal.style.display = 'none';
+            });
+
+            window.addEventListener('click', function (e) {
+                if (e.target === privacyModal) {
+                    privacyModal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const logoContainer = document.querySelector('.logo-container');
+        const primaryLogo = document.querySelector('.primary-logo');
+        const secondaryLogo = document.querySelector('.secondary-logo');
+        let isShowingSecondary = false;
+
+        logoContainer.addEventListener('click', function() {
+            if (!isShowingSecondary) {
+                primaryLogo.style.opacity = '0';
+                secondaryLogo.style.opacity = '1';
+            } else {
+                primaryLogo.style.opacity = '1';
+                secondaryLogo.style.opacity = '0';
+            }
+            isShowingSecondary = !isShowingSecondary;
+        });
+    });
+    </script>
+    <script>
+        // Add reload functionality to ensure banners are properly displayed
+        window.addEventListener('load', function() {
+            // Force reload banners from localStorage
+            loadBanners();
+        });
+    </script>
+    <script>
+    function changeLanguage(targetUrl) {
+      window.location.href = targetUrl;
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const languageSelect = document.getElementById('language');
+      if (!languageSelect) return;
+      const currentPath = window.location.pathname;
+      for (let option of languageSelect.options) {
+        if (currentPath.endsWith(option.value) || currentPath.endsWith('/' + option.value)) {
+          option.selected = true;
+          break;
+        }
+        if (option.value.includes('einfach') && currentPath.includes('einfach.html')) {
+          option.selected = true;
+        }
+      }
+    });
+    </script>
+    <script src="/js/chatbotKey.js"></script>
+    <script defer src="/js/chatbot.js"></script>
+    <!-- Arrow images nicht verwenden -->
+    <style>.section-arrow{display:none!important;}</style>
+    <!-- Load React Events bundle and mount -->
+    <script defer src="react/kosge-events.js" onload="window.mountKosgeEvents && window.mountKosgeEvents('#participate-root')"></script>
+</body>
+
+</html>

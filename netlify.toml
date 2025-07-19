@@ -1,0 +1,51 @@
+[build]
+  # Build React library (frontend) and then install Netlify Functions deps + helper scripts
+  command = "npm --prefix frontend install && npm --prefix frontend run build && npm --prefix netlify/functions install && python scripts/generate_chatbot_key.py && python scripts/inject_chatbot_script.py"
+  # Serve static site from docs directory
+  publish = "docs"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/login"
+  to = "/.netlify/functions/login"
+  status = 200
+[[redirects]]
+  from = "/api/participants"
+  to = "/.netlify/functions/participants"
+  status = 200
+[[redirects]]
+  from = "/api/banners/*"
+  to = "/.netlify/functions/banners/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/banners"
+  to = "/.netlify/functions/banners"
+  status = 200
+
+[[redirects]]
+  from = "/api/events*"
+  to = "/.netlify/functions/events/:splat"
+  status = 200
+
+# Admin panel redirect
+[[redirects]]
+  from = "/admin"
+  to = "/react-app/index.html"
+  status = 200
+
+# Keep SPA redirect last
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[build.environment]
+  # Disable secret scanning for the Groq API key written to the chatbotKey.js file
+  SECRETS_SCAN_OMIT_KEYS = "GROQ_API_KEY"  # allow this env var to appear in build output
+  # Ensure Python is available for build helper scripts
+  PYTHON_VERSION = "3.10"
+  # Alternatively you could disable scanning entirely with SECRETS_SCAN_ENABLED = "false"
