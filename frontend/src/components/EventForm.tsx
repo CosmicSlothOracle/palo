@@ -12,7 +12,9 @@ interface Props {
 const EventForm: React.FC<Props> = ({ event, onSave, onCancel }) => {
   const { token } = useAuth();
   const [title, setTitle] = useState(event?.title || '');
+  const [description, setDescription] = useState(event?.description || '');
   const [bannerUrl, setBannerUrl] = useState(event?.banner_url || '');
+  const [uploadedImage, setUploadedImage] = useState(event?.uploaded_image || '');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -22,8 +24,9 @@ const EventForm: React.FC<Props> = ({ event, onSave, onCancel }) => {
       setError('Titel ist erforderlich');
       return;
     }
-    if (!bannerUrl) {
-      setError('Banner ist erforderlich');
+
+    if (!event?.id) {
+      setError('Event ID ist erforderlich');
       return;
     }
 
@@ -32,16 +35,13 @@ const EventForm: React.FC<Props> = ({ event, onSave, onCancel }) => {
 
     try {
       const eventData = {
-        id: event?.id || undefined,
         title: title.trim(),
+        description: description.trim(),
         banner_url: bannerUrl,
       };
 
-      const url = event ? `/api/events/${event.id}` : '/api/events';
-      const method = event ? 'PUT' : 'POST';
-
-      const res = await fetch(url, {
-        method,
+      const res = await fetch(`/api/events/${event.id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -50,10 +50,8 @@ const EventForm: React.FC<Props> = ({ event, onSave, onCancel }) => {
       });
 
       if (res.ok) {
-        const savedEvent = await res.json();
-        // API returns {event: Event} for create, {event: Event} for update
-        const event = savedEvent.event || savedEvent;
-        onSave(event);
+        const result = await res.json();
+        onSave(result.event);
       } else {
         const errorData = await res.json();
         setError(errorData.error || 'Fehler beim Speichern');
@@ -65,11 +63,70 @@ const EventForm: React.FC<Props> = ({ event, onSave, onCancel }) => {
     }
   };
 
+  const handleImageUpload = async (file: File) => {
+    if (!event?.id) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch(`/api/events/${event.id}/upload`, {
+        method: 'POST',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: formData,
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        setUploadedImage(result.filename);
+        // The uploaded image takes priority, so we can show this in preview
+      } else {
+        alert('Fehler beim Hochladen des Bildes');
+      }
+    } catch (err) {
+      alert('Fehler beim Hochladen des Bildes');
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    if (!event?.id || !uploadedImage) return;
+
+    try {
+      const res = await fetch(`/api/events/${event.id}/remove-image`, {
+        method: 'POST',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (res.ok) {
+        setUploadedImage('');
+      } else {
+        alert('Fehler beim Entfernen des Bildes');
+      }
+    } catch (err) {
+      alert('Fehler beim Entfernen des Bildes');
+    }
+  };
+
+  // Get display image URL with proper priority
+  const getDisplayImageUrl = () => {
+    if (uploadedImage) {
+      return `/uploads/${uploadedImage}`;
+    }
+    if (bannerUrl) {
+      return bannerUrl;
+    }
+    return '/uploads/placeholder.png';
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl font-semibold mb-4">
-          {event ? 'Event bearbeiten' : 'Neues Event erstellen'}
+          Event {event?.id} bearbeiten
         </h2>
 
         <form onSubmit={handleSubmit}>
@@ -81,19 +138,71 @@ const EventForm: React.FC<Props> = ({ event, onSave, onCancel }) => {
               onChange={(e) => setTitle(e.target.value)}
               className="border border-gray-300 p-2 rounded w-full"
               placeholder="Event-Titel eingeben"
+              required
             />
           </div>
 
           <div className="mb-4">
-            <label className="block mb-2 font-medium">Banner</label>
-            {bannerUrl && (
+            <label className="block mb-2 font-medium">Beschreibung</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="border border-gray-300 p-2 rounded w-full"
+              placeholder="Event-Beschreibung eingeben"
+              rows={3}
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block mb-2 font-medium">Bild</label>
+
+            {/* Image Preview */}
+            <div className="mb-3">
               <img
-                src={bannerUrl}
-                alt="Banner preview"
-                className="w-full h-32 object-cover mb-2 rounded"
+                src={getDisplayImageUrl()}
+                alt="Preview"
+                className="w-full h-32 object-cover rounded"
+                style={{ aspectRatio: '4/3' }}
               />
-            )}
-            <UploadForm onUploaded={setBannerUrl} />
+            </div>
+
+            {/* Image Upload */}
+            <div className="mb-3">
+              <label className="block text-sm font-medium mb-1">Bild hochladen (bevorzugt)</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImageUpload(file);
+                }}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+              {uploadedImage && (
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="mt-2 text-sm text-red-600 hover:text-red-800"
+                >
+                  Hochgeladenes Bild entfernen
+                </button>
+              )}
+            </div>
+
+            {/* URL Input */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Oder Bild-URL eingeben</label>
+              <input
+                type="url"
+                value={bannerUrl}
+                onChange={(e) => setBannerUrl(e.target.value)}
+                className="border border-gray-300 p-2 rounded w-full text-sm"
+                placeholder="https://example.com/image.jpg"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Wird nur verwendet, wenn kein Bild hochgeladen wurde
+              </p>
+            </div>
           </div>
 
           {error && (

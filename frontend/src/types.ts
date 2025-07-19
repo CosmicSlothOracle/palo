@@ -1,8 +1,13 @@
 export interface Event {
-  id: string;
+  id: number;
   title: string;
+  description?: string;
   banner_url: string;
+  uploaded_image?: string;
+  display_image_url?: string;
   participants?: Participant[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Participant {

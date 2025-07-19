@@ -19,72 +19,55 @@ const App: React.FC = () => {
   const { token, user, logout } = useAuth();
 
   useEffect(() => {
-    async function fetchEvents() {
-      try {
-        const res = await authFetch('/api/events', { skipAuth: true });
-        const json = await res.json();
-        // API is expected to return { events: Event[] } but guard against other shapes
-        if (Array.isArray(json?.events)) {
-          setEvents(json.events);
-        } else if (Array.isArray(json)) {
-          // Some environments might return the array directly
-          setEvents(json as Event[]);
-        } else {
-          // Fallback to empty list to avoid runtime errors
-          setEvents([]);
-        }
-      } catch (err) {
-        console.error('Failed to load events', err);
-      }
-    }
     fetchEvents();
   }, []);
 
+  const fetchEvents = async () => {
+    try {
+      const res = await authFetch('/api/events', { skipAuth: true });
+      const json = await res.json();
+      if (Array.isArray(json?.events)) {
+        // Ensure we have exactly 4 events
+        const staticEvents = json.events.slice(0, 4);
+        while (staticEvents.length < 4) {
+          staticEvents.push({
+            id: staticEvents.length + 1,
+            title: `Event ${staticEvents.length + 1}`,
+            description: `Beschreibung für Event ${staticEvents.length + 1}`,
+            banner_url: '',
+            participants: []
+          });
+        }
+        setEvents(staticEvents);
+      } else {
+        setEvents([]);
+      }
+    } catch (err) {
+      console.error('Failed to load events', err);
+    }
+  };
+
   const handleParticipate = (event: Event) => {
-    setSelectedEvent(event);
+    if (token) {
+      // Admin view - show participants
+      setSelectedEvent(event);
+    }
   };
 
   const handleCloseForm = () => setSelectedEvent(null);
-
-  const handleCreateEvent = () => {
-    setEditingEvent(null);
-    setShowEventForm(true);
-  };
 
   const handleEditEvent = (event: Event) => {
     setEditingEvent(event);
     setShowEventForm(true);
   };
 
-  const handleDeleteEvent = async (event: Event) => {
-    if (!confirm(`Event "${event.title}" wirklich löschen?`)) return;
-
-    try {
-      const res = await fetch(`/api/events/${event.id}`, {
-        method: 'DELETE',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-
-      if (res.ok) {
-        setEvents(events.filter(e => e.id !== event.id));
-      } else {
-        alert('Fehler beim Löschen des Events');
-      }
-    } catch (err) {
-      alert('Fehler beim Löschen des Events');
-    }
-  };
-
   const handleSaveEvent = (savedEvent: Event) => {
-    if (editingEvent) {
-      // Update existing event
-      setEvents(events.map(e => e.id === savedEvent.id ? savedEvent : e));
-    } else {
-      // Add new event
-      setEvents([...events, savedEvent]);
-    }
+    // Update the event in the list
+    setEvents(events.map(e => e.id === savedEvent.id ? savedEvent : e));
     setShowEventForm(false);
     setEditingEvent(null);
+    // Refresh events to get updated data
+    fetchEvents();
   };
 
   const handleCancelEventForm = () => {
@@ -92,10 +75,29 @@ const App: React.FC = () => {
     setEditingEvent(null);
   };
 
+  const handleResetEvent = async (event: Event) => {
+    if (!confirm(`Event "${event.title}" wirklich zurücksetzen?`)) return;
+
+    try {
+      const res = await fetch(`/api/events/${event.id}/reset`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      if (res.ok) {
+        fetchEvents(); // Refresh events
+      } else {
+        alert('Fehler beim Zurücksetzen des Events');
+      }
+    } catch (err) {
+      alert('Fehler beim Zurücksetzen des Events');
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
-      <header className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold">KOSGE Events</h1>
+      <header className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">KOSGE Programm</h1>
         <div>
           {token ? (
             <div className="flex items-center gap-2">
@@ -122,12 +124,6 @@ const App: React.FC = () => {
         <div className="mb-6 space-y-4">
           <div className="flex gap-2">
             <button
-              className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
-              onClick={handleCreateEvent}
-            >
-              Neues Event erstellen
-            </button>
-            <button
               className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded"
               onClick={() => setShowBannerManagement(!showBannerManagement)}
             >
@@ -144,22 +140,21 @@ const App: React.FC = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {events.length === 0 && (
-          <p className="text-gray-500">Keine Events vorhanden. Melde dich als Admin an, um ein neues Event anzulegen.</p>
-        )}
+      {/* Static grid of exactly 4 events */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
         {events.map((ev) => (
           <EventCard
             key={ev.id}
             event={ev}
-            onParticipate={() => handleParticipate(ev)}
+            onParticipate={token ? () => handleParticipate(ev) : undefined}
             onEdit={token ? () => handleEditEvent(ev) : undefined}
-            onDelete={token ? () => handleDeleteEvent(ev) : undefined}
+            onDelete={token ? () => handleResetEvent(ev) : undefined}
           />
         ))}
       </div>
 
-      {selectedEvent && (
+      {/* Modals */}
+      {selectedEvent && token && (
         <ParticipantForm event={selectedEvent} onClose={handleCloseForm} />
       )}
       {showLogin && <LoginForm onClose={() => setShowLogin(false)} />}

@@ -212,100 +212,267 @@ def save_participants(participants):
         json.dump(participants, f, ensure_ascii=False, indent=2)
 
 
-# -------------------- Helper functions for events --------------------
+# -------------------- Helper functions for static events --------------------
 
-def load_events():
+def load_static_events():
+    """Load static events data - always returns exactly 4 events"""
     if not os.path.exists(EVENTS_FILE):
-        return []
+        # Initialize with 4 default events
+        default_events = []
+        for i in range(1, 5):
+            default_events.append({
+                'id': i,
+                'title': f'Event {i}',
+                'description': f'Beschreibung für Event {i}',
+                'banner_url': '',
+                'uploaded_image': '',  # Path to uploaded image file
+                'participants': [],
+                'created_at': datetime.utcnow().isoformat()
+            })
+        save_static_events(default_events)
+        return default_events
+
     with open(EVENTS_FILE, 'r', encoding='utf-8') as f:
         try:
-            return json.load(f)
+            events = json.load(f)
+            # Ensure we always have exactly 4 events
+            while len(events) < 4:
+                next_id = len(events) + 1
+                events.append({
+                    'id': next_id,
+                    'title': f'Event {next_id}',
+                    'description': f'Beschreibung für Event {next_id}',
+                    'banner_url': '',
+                    'uploaded_image': '',
+                    'participants': [],
+                    'created_at': datetime.utcnow().isoformat()
+                })
+            # Limit to exactly 4 events
+            events = events[:4]
+            return events
         except Exception:
-            return []
+            return load_static_events()  # Recursively load defaults if file is corrupted
 
 
-def save_events(events):
+def save_static_events(events):
+    """Save static events data"""
     with open(EVENTS_FILE, 'w', encoding='utf-8') as f:
         json.dump(events, f, ensure_ascii=False, indent=2)
 
 
-def get_next_event_id(events):
-    if not events:
-        return 1
-    return max(event.get('id', 0) for event in events) + 1
+def get_event_image_url(event):
+    """Get the image URL for an event, prioritizing uploaded image over banner_url"""
+    if event.get('uploaded_image') and os.path.exists(os.path.join(UPLOAD_FOLDER, event['uploaded_image'])):
+        return f'/uploads/{event["uploaded_image"]}'
+    elif event.get('banner_url'):
+        return event['banner_url']
+    else:
+        return '/uploads/placeholder.png'  # Default placeholder
 
+
+# -------------------- File Upload Routes --------------------
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    """Serve uploaded files"""
+    return send_from_directory(UPLOAD_FOLDER, filename)
 
 # -------------------- Event Endpoints --------------------
 
+
 @app.route('/api/events', methods=['GET'])
 def list_events():
-    """Public endpoint: return list of events."""
-    events = load_events()
+    """Public endpoint: return list of events with proper image URLs."""
+    events = load_static_events()
+    # Add computed image URLs to each event
+    for event in events:
+        event['display_image_url'] = get_event_image_url(event)
     return jsonify({'events': events}), 200
 
 
-@app.route('/api/events', methods=['POST'])
+@app.route('/api/events/<int:event_id>', methods=['POST'])
 @auth_required
-def create_event():
-    """Admin: create a new event. Expected JSON: {title, banner_url}"""
+def update_static_event(event_id):
+    """Admin: update a static event (1-4). Expected JSON: {title, description, banner_url}"""
+    if event_id < 1 or event_id > 4:
+        return jsonify({'error': 'Event ID must be between 1 and 4'}), 400
+
     data = request.get_json()
     title = data.get('title')
+    description = data.get('description')
     banner_url = data.get('banner_url')
 
-    if not title or not banner_url:
-        return jsonify({'error': 'title and banner_url are required'}), 400
+    events = load_static_events()
+    event = next((e for e in events if e.get('id') == event_id), None)
+    if not event:
+        return jsonify({'error': 'Event not found'}), 404
 
-    events = load_events()
-    event_id = get_next_event_id(events)
-    new_event = {
-        'id': event_id,
-        'title': title,
-        'banner_url': banner_url,
-        'created_at': datetime.utcnow().isoformat(),
-        'participants': []
-    }
-    events.append(new_event)
-    save_events(events)
-    return jsonify({'event': new_event}), 201
+    if title:
+        event['title'] = title
+    if description:
+        event['description'] = description
+    if banner_url:
+        event['banner_url'] = banner_url
+
+    event['updated_at'] = datetime.utcnow().isoformat()
+    save_static_events(events)
+    return jsonify({'event': event}), 200
 
 
 @app.route('/api/events/<int:event_id>', methods=['PUT'])
 @auth_required
 def update_event(event_id):
-    """Admin: update title or banner of an event."""
-    events = load_events()
+    """Admin: update title, description or banner of a static event (1-4)."""
+    if event_id < 1 or event_id > 4:
+        return jsonify({'error': 'Event ID must be between 1 and 4'}), 400
+
+    events = load_static_events()
     event = next((e for e in events if e.get('id') == event_id), None)
     if not event:
         return jsonify({'error': 'Event not found'}), 404
 
     data = request.get_json()
     title = data.get('title')
+    description = data.get('description')
     banner_url = data.get('banner_url')
+
     if title:
         event['title'] = title
+    if description:
+        event['description'] = description
     if banner_url:
         event['banner_url'] = banner_url
+
     event['updated_at'] = datetime.utcnow().isoformat()
-    save_events(events)
+    save_static_events(events)
     return jsonify({'event': event}), 200
 
 
-@app.route('/api/events/<int:event_id>', methods=['DELETE'])
+# Static events cannot be deleted, only reset
+@app.route('/api/events/<int:event_id>/reset', methods=['POST'])
 @auth_required
-def delete_event(event_id):
-    events = load_events()
-    new_events = [e for e in events if e.get('id') != event_id]
-    if len(new_events) == len(events):
-        return jsonify({'error': 'Event not found'}), 404
-    save_events(new_events)
-    return jsonify({'success': True}), 200
+def reset_static_event(event_id):
+    """Admin: reset a static event to default values"""
+    if event_id < 1 or event_id > 4:
+        return jsonify({'error': 'Event ID must be between 1 and 4'}), 400
 
+    events = load_static_events()
+    event = next((e for e in events if e.get('id') == event_id), None)
+    if not event:
+        return jsonify({'error': 'Event not found'}), 404
+
+    # Reset to default values
+    event.update({
+        'title': f'Event {event_id}',
+        'description': f'Beschreibung für Event {event_id}',
+        'banner_url': '',
+        'uploaded_image': '',
+        'participants': [],
+        'updated_at': datetime.utcnow().isoformat()
+    })
+
+    save_static_events(events)
+    return jsonify({'success': True, 'event': event}), 200
+
+
+# -------------------- Image Upload Endpoints for Static Events --------------------
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route('/api/events/<int:event_id>/upload', methods=['POST'])
+@auth_required
+def upload_event_image(event_id):
+    """Admin: upload an image for a static event (1-4)"""
+    if event_id < 1 or event_id > 4:
+        return jsonify({'error': 'Event ID must be between 1 and 4'}), 400
+
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+
+    if file and allowed_file(file.filename):
+        # Generate secure filename with event prefix
+        original_filename = secure_filename(file.filename)
+        file_extension = original_filename.rsplit('.', 1)[1].lower()
+        filename = f'event_{event_id}_{datetime.utcnow().strftime("%Y%m%d_%H%M%S")}.{file_extension}'
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+
+        try:
+            file.save(filepath)
+
+            # Update event with uploaded image
+            events = load_static_events()
+            event = next((e for e in events if e.get('id') == event_id), None)
+            if not event:
+                # Clean up uploaded file if event not found
+                os.remove(filepath)
+                return jsonify({'error': 'Event not found'}), 404
+
+            # Remove old uploaded image if exists
+            if event.get('uploaded_image'):
+                old_path = os.path.join(UPLOAD_FOLDER, event['uploaded_image'])
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+
+            event['uploaded_image'] = filename
+            event['updated_at'] = datetime.utcnow().isoformat()
+            save_static_events(events)
+
+            return jsonify({
+                'success': True,
+                'filename': filename,
+                'image_url': get_event_image_url(event)
+            }), 200
+
+        except Exception as e:
+            logger.error(f'Error uploading file: {str(e)}')
+            return jsonify({'error': 'Failed to upload file'}), 500
+
+    return jsonify({'error': 'Invalid file type. Allowed: png, jpg, jpeg, gif, webp'}), 400
+
+
+@app.route('/api/events/<int:event_id>/remove-image', methods=['POST'])
+@auth_required
+def remove_event_image(event_id):
+    """Admin: remove uploaded image for a static event (1-4)"""
+    if event_id < 1 or event_id > 4:
+        return jsonify({'error': 'Event ID must be between 1 and 4'}), 400
+
+    events = load_static_events()
+    event = next((e for e in events if e.get('id') == event_id), None)
+    if not event:
+        return jsonify({'error': 'Event not found'}), 404
+
+    # Remove uploaded image file if exists
+    if event.get('uploaded_image'):
+        old_path = os.path.join(UPLOAD_FOLDER, event['uploaded_image'])
+        if os.path.exists(old_path):
+            os.remove(old_path)
+        event['uploaded_image'] = ''
+
+    event['updated_at'] = datetime.utcnow().isoformat()
+    save_static_events(events)
+
+    return jsonify({
+        'success': True,
+        'image_url': get_event_image_url(event)
+    }), 200
 
 # -------------------- Participant per Event --------------------
 
+
 @app.route('/api/events/<int:event_id>/participants', methods=['POST'])
 def add_event_participant(event_id):
-    events = load_events()
+    events = load_static_events()
     event = next((e for e in events if e.get('id') == event_id), None)
     if not event:
         return jsonify({'error': 'Event not found'}), 404
@@ -325,14 +492,14 @@ def add_event_participant(event_id):
         'timestamp': datetime.utcnow().isoformat()
     }
     event.setdefault('participants', []).append(participant)
-    save_events(events)
+    save_static_events(events)
     return jsonify({'success': True, 'participant': participant}), 201
 
 
 @app.route('/api/events/<int:event_id>/participants', methods=['GET'])
 @auth_required
 def list_event_participants(event_id):
-    events = load_events()
+    events = load_static_events()
     event = next((e for e in events if e.get('id') == event_id), None)
     if not event:
         return jsonify({'error': 'Event not found'}), 404
@@ -345,7 +512,7 @@ def list_event_participants(event_id):
 @auth_required
 def export_event(event_id):
     fmt = request.args.get('fmt', 'json').lower()
-    events = load_events()
+    events = load_static_events()
     event = next((e for e in events if e.get('id') == event_id), None)
     if not event:
         return jsonify({'error': 'Event not found'}), 404
@@ -462,148 +629,6 @@ def delete_banner(filename):
         return jsonify({'success': True, 'filename': filename}), 200
     else:
         return jsonify({'error': 'File not found.'}), 404
-
-
-@app.route('/api/uploads/<filename>')
-def uploaded_file(filename):
-    logger.info(f'Attempting to serve file: {filename}')
-    logger.info(f'Upload folder: {UPLOAD_FOLDER}')
-    file_path = os.path.join(UPLOAD_FOLDER, filename)
-    logger.info(f'Full file path: {file_path}')
-
-    if not os.path.exists(file_path):
-        logger.error(f'File not found: {file_path}')
-        return jsonify({'error': 'File not found'}), 404
-
-    try:
-        logger.info(f'File exists, size: {os.path.getsize(file_path)} bytes')
-        response = send_from_directory(UPLOAD_FOLDER, filename)
-
-        # Add CORS headers with restricted origin
-        response = add_cors_headers(response)
-
-        # Set content type for PNG files
-        if filename.lower().endswith('.png'):
-            response.headers['Content-Type'] = 'image/png'
-
-        return response
-    except Exception as e:
-        logger.error(f'Error serving file {filename}: {str(e)}')
-        return jsonify({'error': f'Error serving file: {str(e)}'}), 500
-
-
-@app.route('/api/participants', methods=['POST'])
-def add_participant():
-    data = request.get_json()
-    name = data.get('name')
-    email = data.get('email')
-    message = data.get('message')
-    banner = data.get('banner')
-    if not name:
-        return jsonify({'error': 'Name ist erforderlich.'}), 400
-    participant = {
-        'name': name,
-        'email': email,
-        'message': message,
-        'banner': banner
-    }
-    participants = load_participants()
-    participants.append(participant)
-    save_participants(participants)
-    return jsonify({'success': True, 'participant': participant}), 201
-
-
-@app.route('/api/participants', methods=['GET'])
-@auth_required
-def get_participants():
-    try:
-        participants = load_participants()
-        response = jsonify({'participants': participants})
-        # Add CORS headers
-        response = add_cors_headers(response)
-        response.headers.add('Content-Type', 'application/json')
-        return response, 200
-    except Exception as e:
-        logger.error(f'Error getting participants: {str(e)}')
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/participants', methods=['OPTIONS'])
-def participants_options():
-    response = make_response()
-    response = add_cors_headers(response)
-    return response
-
-
-# CMS Routes
-@app.route('/api/cms/content/<section>', methods=['GET'])
-def get_content(section):
-    language = request.args.get('language')
-    content = content_manager.get_content(section, language)
-    if content:
-        return jsonify(content), 200
-    return jsonify({'error': 'Content not found'}), 404
-
-
-@app.route('/api/cms/content/<section>', methods=['POST'])
-@auth_required
-def create_content(section):
-    data = request.get_json()
-    title = data.get('title')
-    content = data.get('content')
-    metadata = data.get('metadata', {})
-
-    if not all([title, content]):
-        return jsonify({'error': 'Title and content are required'}), 400
-
-    success = content_manager.create_content(section, title, content, metadata)
-    if success:
-        return jsonify({'success': True, 'section': section}), 201
-    return jsonify({'error': 'Failed to create content'}), 500
-
-
-@app.route('/api/cms/content/<section>', methods=['PUT'])
-@auth_required
-def update_content(section):
-    data = request.get_json()
-    content = data.get('content')
-    metadata = data.get('metadata', {})
-    language = data.get('language')
-
-    if not content:
-        return jsonify({'error': 'Content is required'}), 400
-
-    success = content_manager.update_content(
-        section, content, metadata, language)
-    if success:
-        return jsonify({'success': True, 'section': section}), 200
-    return jsonify({'error': 'Failed to update content'}), 404
-
-
-@app.route('/api/cms/content/<section>/translate/<target_language>', methods=['POST'])
-@auth_required
-def translate_content(section, target_language):
-    success = content_manager.translate_content(section, target_language)
-    if success:
-        return jsonify({'success': True, 'section': section, 'language': target_language}), 200
-    return jsonify({'error': 'Translation failed'}), 400
-
-
-@app.route('/api/cms/sections', methods=['GET'])
-def list_sections():
-    language = request.args.get('language')
-    sections = content_manager.list_sections(language)
-    return jsonify({'sections': sections}), 200
-
-
-@app.route('/api/cms/content/<section>', methods=['DELETE'])
-@auth_required
-def delete_content(section):
-    language = request.args.get('language')
-    success = content_manager.delete_content(section, language)
-    if success:
-        return jsonify({'success': True}), 200
-    return jsonify({'error': 'Content not found'}), 404
 
 
 # Add a root route that redirects to frontend or shows API status
