@@ -492,20 +492,11 @@
                 src="https://link.storjshare.io/raw/jx4zolve64kgmj27jdwq3fh4otka/geko/arrow.png" alt="Pfeil">
             </section>
             <!-- Neue Sektion für Teilnahme (React App) -->
-            <section id="participate">
-                <div class="section-title-container">
-                    <h2>Teilnehmen</h2>
-                </div>
-                <div id="participate-root"></div>
-            </section>
             <section id="programm">
                 <div class="section-title-container">
                     <h2>Programm</h2>
                 </div>
-                <div class="event-images" style="display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; align-items: flex-start; margin-bottom: 32px;">
-                    <img src="https://link.storjshare.io/raw/jxwpeplx3yxtkyeltknei6yn5dtq/geko/event0.png" alt="Programm Event 0" style="max-width: 480px; width: 100%; height: auto; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);" />
-                    <img src="https://link.storjshare.io/raw/jx4klht7crd5x7grus4gnsz4s7fa/geko/event2.jpg" alt="Programm Event 1" style="max-width: 480px; width: 100%; height: auto; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);" />
-                </div>
+                <div id="programm-root"></div>
             </section>
         </main>
         <footer id="contact" role="contentinfo">
@@ -1185,7 +1176,7 @@
     <!-- Arrow images nicht verwenden -->
     <style>.section-arrow{display:none!important;}</style>
     <!-- Load React Events bundle and mount -->
-    <script defer src="react/kosge-events.js" onload="window.mountKosgeEvents && window.mountKosgeEvents('#participate-root')"></script>
+    <script defer src="react/kosge-events.js" onload="window.mountKosgeEvents && window.mountKosgeEvents('#programm-root')"></script>
 </body>
 
 </html>
