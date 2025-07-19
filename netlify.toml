@@ -1,7 +1,16 @@
 [build]
-  # Build React library (frontend) and then install Netlify Functions deps + helper scripts
-  command = "npm --prefix frontend install && npm --prefix frontend run build && npm --prefix netlify/functions install && python scripts/generate_chatbot_key.py && python scripts/inject_chatbot_script.py"
-  # Serve static site from docs directory
+  # 1) Frontend installieren & bauen  (-> erzeugt frontend/public/kosge-events.js)
+  # 2) Netlify Functions installieren
+  # 3) Chat-Bot Key & Script injizieren
+  # 4) >>> neue Zeile: kopiere kosge-events.js in docs/react <<<
+  command = """
+    npm --prefix frontend install \
+    && npm --prefix frontend run build \
+    && cp frontend/public/kosge-events.js docs/react/kosge-events.js \
+    && npm --prefix netlify/functions install \
+    && python scripts/generate_chatbot_key.py \
+    && python scripts/inject_chatbot_script.py
+  """
   publish = "docs"
 
 [functions]
