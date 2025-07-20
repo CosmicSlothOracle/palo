@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: kosge-backend
+    env: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: gunicorn backend.app:app
+    plan: free
+    region: oregon
+    branch: main
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: "https://kosge.netlify.app,https://kosge-frontend.netlify.app,http://localhost:3000"
+      - key: FLASK_ENV
+        value: "production"
+      - key: ADMIN_USERNAME
+        value: "admin"
+      - key: ADMIN_PASSWORD_HASH
+        value: "$2b$12$ZCgWXzUdmVX.PnIfj4oeJOkX69Tu1rVZ51zGYe3kSloANnwMaTlBW"
+    healthCheckPath: /health
