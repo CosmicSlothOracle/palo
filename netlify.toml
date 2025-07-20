@@ -1,25 +1,22 @@
 [build]
-  # Simplified build: Frontend only, no backend functions
-  command = "npm --prefix frontend install && npm --prefix frontend run build && npm --prefix frontend run build:lib && mkdir -p docs/react && cp frontend/dist/kosge-events.js docs/react/kosge-events.js && python scripts/generate_chatbot_key.py && python scripts/inject_chatbot_script.py"
-  publish = "docs"
+  # Build React frontend
+  command = "npm --prefix frontend install && npm --prefix frontend run build"
+  publish = "frontend/dist"
 
-# API calls now go to Render backend - no local functions needed
+# API calls go to Render backend
 
 # Admin panel redirect
 [[redirects]]
   from = "/admin"
-  to = "/react-app/index.html"
+  to = "/index.html"
   status = 200
 
-# Keep SPA redirect last
+# SPA redirect - all routes go to React app
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
 [build.environment]
-  # Disable secret scanning for the Groq API key written to the chatbotKey.js file
-  SECRETS_SCAN_OMIT_KEYS = "GROQ_API_KEY"  # allow this env var to appear in build output
-  # Ensure Python is available for build helper scripts
-  PYTHON_VERSION = "3.10"
-  # Alternatively you could disable scanning entirely with SECRETS_SCAN_ENABLED = "false"
+  # Ensure Node.js is available for build
+  NODE_VERSION = "18"
