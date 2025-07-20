@@ -1,102 +1,211 @@
-# KOSGE Website (Neustrukturierung)
+# KOSGE Frontend
 
-## Zielstruktur
+Modern React frontend for the KOSGE event management system, optimized for Netlify deployment.
 
-Das Projekt wird in zwei Hauptteile getrennt:
+## ✨ Features
 
-- **Frontend** (`/frontend`):
-  - `/public`: Statische Dateien (HTML, CSS, JS, Bilder)
-  - `/locales`: Übersetzungsdateien (JSON)
-- **Backend** (`/backend`):
-  - Flask-API für Authentifizierung, Banner-Upload, Teilnehmer- und Übersetzungsverwaltung
-  - `/uploads`: Speicherort für hochgeladene Banner
+- ✅ **React 18** with TypeScript
+- ✅ **Tailwind CSS** for styling
+- ✅ **Vite** for fast development and building
+- ✅ **Environment-based API configuration**
+- ✅ **JWT Authentication** with React Context
+- ✅ **Event Management** - CRUD operations for events
+- ✅ **Participant Registration** - Public and admin views
+- ✅ **File Upload** - Event image management
+- ✅ **CSV Export** - Participant data export
+- ✅ **Responsive Design** - Mobile-first approach
 
-## Features (geplant)
+## 🚀 Quick Start
 
-- Zentrale, sichere Authentifizierung für Admins
-- Banner-Upload und Verwaltung über das Backend
-- Teilnehmerverwaltung (Formular, Speicherung, Admin-Übersicht)
-- Zentrale, dynamische Mehrsprachigkeit (alle Inhalte über API/JSON)
-- Klare Trennung von Frontend und Backend (API-first)
+### Local Development
 
-## Entwicklung
+1. **Install Dependencies**
 
-- Frontend und Backend werden separat entwickelt und können unabhängig deployed werden.
-- Die API wird als REST-API mit Flask bereitgestellt.
-
-## Setup (in Kürze)
-
-- Siehe jeweils `/frontend/README.md` und `/backend/README.md` für Details.
-
-## Overview
-
-This is the official website for Kollektiv für solidarische Gesundheit e.V. (KOSGE), a collective for solidarity health in Berlin. The website is designed to be multilingual, responsive, and accessible.
-
-## Features
-
-### Multilingual Support
-
-- The website is available in multiple languages:
-  - German (default)
-  - English
-  - Turkish
-  - Russian
-  - Arabic
-- Language selection is available in the top-right corner of the website
-- User language preferences are saved in the browser's local storage
-
-### Responsive Design
-
-- The website is fully responsive and works on all devices (desktop, tablet, mobile)
-- Adaptive layout that changes based on screen size
-- Mobile-friendly navigation
-
-### Interactive Elements
-
-- Hero slideshow with automatic transitions
-- Hover effects on interactive elements for better user experience
-- Smooth transitions and animations
-
-## File Structure
-
-- `index.html` - Main HTML file (German)
-- `lang/` - Directory containing translated versions of the website
-  - `en.html` - English version
-  - `tr.html` - Turkish version
-  - `ru.html` - Russian version
-  - `ar.html` - Arabic version
-  - `einfach.html` - Simple language version (German)
-- `css/` - Directory containing CSS files
-  - `style.css` - Main stylesheet
-- `translate_tool/` - Directory containing translation scripts
-  - `translate_html.py` - Python script for translating the website
-
-## Translation
-
-The website uses a custom Python script for translation. To update translations:
-
-1. Make changes to the main `index.html` file (German version)
-2. Run the translation script:
+   ```bash
+   npm install
    ```
-   python translate_tool/translate_html.py
+
+2. **Set Environment Variables**
+
+   ```bash
+   # Create .env.local file
+   echo "VITE_API_URL=http://localhost:10000" > .env.local
    ```
-3. The script will generate updated HTML files for all supported languages in the `lang/` directory
 
-## Local Development
+3. **Start Development Server**
 
-To run the website locally:
-
-1. Clone this repository
-2. Navigate to the project directory
-3. Start a local web server:
+   ```bash
+   npm run dev
+   # Opens http://localhost:3000
    ```
-   python -m http.server 8000
+
+4. **Run Tests**
+   ```bash
+   npm test
    ```
-4. Open your browser and go to `http://localhost:8000`
 
-## Contact
+### Production Build
 
-For any questions or issues, please contact:
+```bash
+npm run build
+# Output: dist/ directory ready for deployment
+```
 
-- Email: info@kosge-berlin.de
-- Phone: +49 1520 7240947
+## 🌐 Deployment on Netlify
+
+### Option 1: Direct Repository Deploy
+
+1. **Connect Repository** to Netlify
+2. **Set Build Command**: `npm run build`
+3. **Set Publish Directory**: `dist`
+4. **Add Environment Variables**:
+   - `VITE_API_URL=https://kosge-backend.onrender.com`
+
+### Option 2: Manual Deploy
+
+```bash
+# Build production version
+npm run build
+
+# Deploy to Netlify (with Netlify CLI)
+npx netlify deploy --prod --dir=dist
+```
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+| Variable       | Development              | Production                           | Description          |
+| -------------- | ------------------------ | ------------------------------------ | -------------------- |
+| `VITE_API_URL` | `http://localhost:10000` | `https://kosge-backend.onrender.com` | Backend API URL      |
+| `VITE_DEBUG`   | `true`                   | `false`                              | Enable debug logging |
+
+### API Configuration
+
+The frontend automatically detects the environment and configures the API accordingly:
+
+```typescript
+// src/config/api.ts
+const getApiBaseUrl = (): string => {
+  if (import.meta.env.DEV) {
+    return import.meta.env.VITE_API_URL || "http://localhost:10000";
+  }
+  return import.meta.env.VITE_API_URL || "https://kosge-backend.onrender.com";
+};
+```
+
+## 🔧 Architecture
+
+### Component Structure
+
+```
+src/
+├── components/          # React components
+│   ├── EventCard.tsx    # Event display
+│   ├── EventForm.tsx    # Event editing
+│   ├── LoginForm.tsx    # Authentication
+│   ├── ParticipantForm.tsx  # Registration
+│   ├── DataExport.tsx   # CSV export
+│   └── ...
+├── context/             # React Context
+│   └── AuthContext.tsx  # Authentication state
+├── config/              # Configuration
+│   └── api.ts           # API endpoints
+├── types.ts             # TypeScript types
+└── App.tsx              # Main application
+```
+
+### Key Features
+
+#### 🔐 Authentication
+
+- JWT-based authentication with automatic token refresh
+- Secure storage in localStorage
+- Protected routes for admin features
+
+#### 📅 Event Management
+
+- Public view for event browsing
+- Admin CRUD operations
+- Image upload with preview
+- Event reset functionality
+
+#### 👥 Participant Management
+
+- Public registration form
+- Admin participant list
+- CSV export functionality
+- Real-time participant count
+
+## 🔄 Migration from Old System
+
+This frontend replaces the hybrid system with:
+
+### ✅ Improvements
+
+- **Unified Architecture**: Single React app instead of mixed HTML/React
+- **Environment Configuration**: No hardcoded URLs
+- **Modern Build System**: Vite instead of complex Netlify build
+- **Type Safety**: Full TypeScript coverage
+- **Better UX**: Consistent React components
+
+### 🗑️ Removed
+
+- ❌ **Netlify Functions**: Moved to dedicated backend
+- ❌ **Mixed HTML/JS**: Pure React implementation
+- ❌ **Complex Build Pipeline**: Simplified to single Vite build
+- ❌ **Hardcoded APIs**: Environment-based configuration
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run integration tests
+npm run test:integration
+```
+
+## 📦 Scripts
+
+| Script              | Description              |
+| ------------------- | ------------------------ |
+| `npm run dev`       | Start development server |
+| `npm run build`     | Build for production     |
+| `npm run build:lib` | Build library version    |
+| `npm run preview`   | Preview production build |
+| `npm run lint`      | Run ESLint               |
+| `npm test`          | Run tests                |
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **API Connection Failed**
+
+   - Check `VITE_API_URL` environment variable
+   - Verify backend is running on correct port
+   - Check CORS configuration
+
+2. **Authentication Issues**
+
+   - Clear localStorage: `localStorage.clear()`
+   - Check JWT token validity
+   - Verify admin credentials
+
+3. **Build Errors**
+   - Clear node_modules: `rm -rf node_modules && npm install`
+   - Check TypeScript errors: `npm run lint`
+
+## 🔗 Related
+
+- **Backend**: `../backend/` - Flask API server for Render
+- **Docs**: `../docs/` - Static website files
+- **Scripts**: `../scripts/` - Build and deployment utilities
+
+---
+
+**Ready for production deployment on Netlify! 🚀**

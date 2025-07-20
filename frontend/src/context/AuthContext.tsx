@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { apiCall, API_ENDPOINTS } from '../config/api';
 
 interface AuthState {
   token: string | null;
@@ -42,11 +43,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (username: string, password: string) => {
     try {
-      const res = await fetch('/api/login', {
+      const res = await apiCall(API_ENDPOINTS.login, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
-      });
+      }, true); // Skip auth for login
       const json = await res.json();
       if (res.ok && json.token) {
         setToken(json.token);
@@ -72,8 +72,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = () => useContext(AuthContext);
 
 // Helper fetch wrapper that automatically attaches Authorization header if token exists
+// Updated to use new API configuration
 export async function authFetch(input: RequestInfo, init: RequestInit & { skipAuth?: boolean } = {}) {
-  const { skipAuth, ...restInit } = init;
+  const { skipAuth = false, ...restInit } = init;
+
+  // Convert relative URLs to absolute URLs using new backend
+  let url: string;
+  if (typeof input === 'string') {
+    if (input.startsWith('/api/')) {
+      // Use new API configuration for relative API calls
+      const { authFetch: configAuthFetch } = await import('../config/api');
+      return configAuthFetch(input, init);
+    }
+    url = input;
+  } else if (input instanceof Request) {
+    url = input.url;
+  } else {
+    url = input.toString();
+  }
+
   const headers = new Headers(restInit.headers || {});
   if (!skipAuth) {
     const token = localStorage.getItem('jwt');
@@ -81,5 +98,6 @@ export async function authFetch(input: RequestInfo, init: RequestInit & { skipAu
       headers.set('Authorization', `Bearer ${token}`);
     }
   }
-  return fetch(input, { ...restInit, headers: Object.fromEntries(headers.entries()) });
+
+  return fetch(url, { ...restInit, headers: Object.fromEntries(headers.entries()) });
 }

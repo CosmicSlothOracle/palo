@@ -1,37 +1,9 @@
 [build]
-  # 1) Frontend installieren & bauen  (-> erzeugt frontend/public/kosge-events.js)
-  # 2) Netlify Functions installieren
-  # 3) Chat-Bot Key & Script injizieren
-  # 4) >>> neue Zeile: kopiere kosge-events.js in docs/react <<<
-  command = "npm --prefix frontend install && npm --prefix frontend run build && npm --prefix frontend run build:lib && mkdir -p docs/react && cp frontend/dist/kosge-events.js docs/react/kosge-events.js && npm --prefix netlify/functions install && python scripts/generate_chatbot_key.py && python scripts/inject_chatbot_script.py"
+  # Simplified build: Frontend only, no backend functions
+  command = "npm --prefix frontend install && npm --prefix frontend run build && npm --prefix frontend run build:lib && mkdir -p docs/react && cp frontend/dist/kosge-events.js docs/react/kosge-events.js && python scripts/generate_chatbot_key.py && python scripts/inject_chatbot_script.py"
   publish = "docs"
 
-[functions]
-  directory = "netlify/functions"
-  node_bundler = "esbuild"
-
-[[redirects]]
-  from = "/api/login"
-  to = "/.netlify/functions/login"
-  status = 200
-[[redirects]]
-  from = "/api/participants"
-  to = "/.netlify/functions/participants"
-  status = 200
-[[redirects]]
-  from = "/api/banners/*"
-  to = "/.netlify/functions/banners/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/api/banners"
-  to = "/.netlify/functions/banners"
-  status = 200
-
-[[redirects]]
-  from = "/api/events*"
-  to = "/.netlify/functions/events/:splat"
-  status = 200
+# API calls now go to Render backend - no local functions needed
 
 # Admin panel redirect
 [[redirects]]

@@ -1,8 +1,17 @@
 // Admin dashboard JS
 
 (function () {
-  // Determine API base. When docs are served on port 5000 (local dev), point to backend on 10000.
-  const API_BASE = (window.location.port === "5000") ? "http://localhost:10000" : "";
+  // API Configuration - Use environment-based backend URL
+  const getApiBase = () => {
+    // Local development detection
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:10000';
+    }
+    // Production: Use Render backend
+    return 'https://kosge-backend.onrender.com';
+  };
+
+  const API_BASE = getApiBase();
 
   const loginPanel = document.getElementById("login-panel");
   const dashboard = document.getElementById("dashboard");
