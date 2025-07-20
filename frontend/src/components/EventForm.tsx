@@ -13,7 +13,13 @@ const EventForm: React.FC<Props> = ({ event, onSave, onCancel }) => {
   const { token } = useAuth();
   const [title, setTitle] = useState(event?.title || '');
   const [description, setDescription] = useState(event?.description || '');
-  const [bannerUrl, setBannerUrl] = useState(event?.banner_url || '');
+  // Pre-populate banner URL with default image if not already set with a custom value
+  const [bannerUrl, setBannerUrl] = useState(() => {
+    if (event?.banner_url && event?.banner_url !== event?.default_image_url) {
+      return event.banner_url; // Keep custom URL if different from default
+    }
+    return event?.default_image_url || event?.banner_url || '';
+  });
   const [uploadedImage, setUploadedImage] = useState(event?.uploaded_image || '');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -111,15 +117,34 @@ const EventForm: React.FC<Props> = ({ event, onSave, onCancel }) => {
     }
   };
 
-  // Get display image URL with proper priority
+  // Get display image URL with proper priority logic
   const getDisplayImageUrl = () => {
+    // Priority 1: Uploaded image
     if (uploadedImage) {
       return `/uploads/${uploadedImage}`;
     }
+
+    // Priority 2: Custom banner URL (if different from default)
+    if (bannerUrl && bannerUrl !== event?.default_image_url) {
+      return bannerUrl;
+    }
+
+    // Priority 3: Default image URL
+    if (event?.default_image_url) {
+      return event.default_image_url;
+    }
+
+    // Priority 4: Any banner URL
     if (bannerUrl) {
       return bannerUrl;
     }
+
     return '/uploads/placeholder.png';
+  };
+
+  // Check if currently showing default image
+  const isShowingDefaultImage = () => {
+    return !uploadedImage && (!bannerUrl || bannerUrl === event?.default_image_url);
   };
 
   return (
@@ -163,7 +188,22 @@ const EventForm: React.FC<Props> = ({ event, onSave, onCancel }) => {
                 alt="Preview"
                 className="w-full h-32 object-cover rounded"
                 style={{ aspectRatio: '4/3' }}
+                onError={(e) => {
+                  // Fallback to placeholder if image fails to load
+                  (e.target as HTMLImageElement).src = '/uploads/placeholder.png';
+                }}
               />
+              <div className="mt-1 text-xs text-gray-600">
+                {uploadedImage ? (
+                  <span className="text-green-600">✓ Zeigt hochgeladenes Bild</span>
+                ) : bannerUrl && bannerUrl !== event?.default_image_url ? (
+                  <span className="text-blue-600">✓ Zeigt benutzerdefinierte URL</span>
+                ) : isShowingDefaultImage() ? (
+                  <span className="text-gray-500">✓ Zeigt Standard-Bild für Event {event?.id}</span>
+                ) : (
+                  <span className="text-gray-400">Zeigt Platzhalter-Bild</span>
+                )}
+              </div>
             </div>
 
             {/* Image Upload */}
@@ -197,11 +237,23 @@ const EventForm: React.FC<Props> = ({ event, onSave, onCancel }) => {
                 value={bannerUrl}
                 onChange={(e) => setBannerUrl(e.target.value)}
                 className="border border-gray-300 p-2 rounded w-full text-sm"
-                placeholder="https://example.com/image.jpg"
+                placeholder={event?.default_image_url || "https://example.com/image.jpg"}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Wird nur verwendet, wenn kein Bild hochgeladen wurde
-              </p>
+              <div className="text-xs text-gray-500 mt-1">
+                <p>Wird nur verwendet, wenn kein Bild hochgeladen wurde.</p>
+                {event?.default_image_url && (
+                  <p className="mt-1">
+                    <span className="font-medium">Standard-URL für Event {event.id}:</span>{' '}
+                    <button
+                      type="button"
+                      onClick={() => setBannerUrl(event.default_image_url || '')}
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Auf Standard zurücksetzen
+                    </button>
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 

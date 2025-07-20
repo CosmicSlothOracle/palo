@@ -27,23 +27,15 @@ const App: React.FC = () => {
       const res = await authFetch('/api/events', { skipAuth: true });
       const json = await res.json();
       if (Array.isArray(json?.events)) {
-        // Ensure we have exactly 4 events
-        const staticEvents = json.events.slice(0, 4);
-        while (staticEvents.length < 4) {
-          staticEvents.push({
-            id: staticEvents.length + 1,
-            title: `Event ${staticEvents.length + 1}`,
-            description: `Beschreibung für Event ${staticEvents.length + 1}`,
-            banner_url: '',
-            participants: []
-          });
-        }
-        setEvents(staticEvents);
+        // Backend ensures exactly 4 events with proper default images
+        setEvents(json.events.slice(0, 4));
       } else {
         setEvents([]);
       }
     } catch (err) {
       console.error('Failed to load events', err);
+      // Set empty array on error - backend will handle defaults on next request
+      setEvents([]);
     }
   };
 

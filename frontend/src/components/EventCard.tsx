@@ -51,8 +51,33 @@ const EventCard: React.FC<Props> = ({ event, onParticipate, onEdit, onDelete }) 
     }
   };
 
-  // Get image URL with proper fallback
-  const imageUrl = event.display_image_url || event.banner_url || '/uploads/placeholder.png';
+  // Get image URL with proper priority logic: uploaded > custom URL > default
+  const getImageUrl = (): string => {
+    // Priority 1: Uploaded image (served via display_image_url from backend)
+    if (event.display_image_url && event.uploaded_image) {
+      return event.display_image_url;
+    }
+
+    // Priority 2: Custom banner URL (if different from default)
+    if (event.banner_url && event.banner_url !== event.default_image_url) {
+      return event.banner_url;
+    }
+
+    // Priority 3: Default image URL
+    if (event.default_image_url) {
+      return event.default_image_url;
+    }
+
+    // Priority 4: Backend computed display URL (fallback)
+    if (event.display_image_url) {
+      return event.display_image_url;
+    }
+
+    // Final fallback
+    return '/uploads/placeholder.png';
+  };
+
+  const imageUrl = getImageUrl();
 
   return (
     <div className="bg-white shadow-lg rounded-lg overflow-hidden flex flex-col h-full">

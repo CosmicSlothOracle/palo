@@ -216,46 +216,31 @@ def save_participants(participants):
 
 def load_static_events():
     """Load static events data - always returns exactly 4 events"""
+
+    # Default image URLs for the four static events as specified in requirements
+    DEFAULT_IMAGES = [
+        'https://link.storjshare.io/raw/julpadc66a57pal46igjl4azssja/geko/event0.png',  # Event 1
+        'https://link.storjshare.io/raw/jvknoz7bbo5l45f5kp4d62fhwt4a/geko/Event1.png',  # Event 2
+        'https://link.storjshare.io/raw/jwtanqrv3dqklcksophmccbgrora/geko/event2.jpg',   # Event 3
+        'https://link.storjshare.io/raw/juj6yfbpheluxs5uzwkfholsamrq/geko/Logo.png'     # Event 4
+    ]
+
     if not os.path.exists(EVENTS_FILE):
-        # Initialize with 4 default events with placeholder images
-        default_events = [
-            {
-                'id': 1,
-                'title': 'Event 1',
-                'description': 'Beschreibung für Event 1',
-                'banner_url': 'https://link.storjshare.io/raw/julpadc66a57pal46igjl4azssja/geko/event0.png',
+        # Initialize with 4 default events with proper default and banner URLs
+        default_events = []
+        for i in range(4):
+            default_events.append({
+                'id': i + 1,
+                'title': f'Event {i + 1}',
+                'description': f'Beschreibung für Event {i + 1}',
+                # Pre-populate banner_url for admin editing
+                'banner_url': DEFAULT_IMAGES[i],
+                # Store default for fallback logic
+                'default_image_url': DEFAULT_IMAGES[i],
                 'uploaded_image': '',
                 'participants': [],
                 'created_at': datetime.utcnow().isoformat()
-            },
-            {
-                'id': 2,
-                'title': 'Event 2',
-                'description': 'Beschreibung für Event 2',
-                'banner_url': 'https://link.storjshare.io/raw/jvknoz7bbo5l45f5kp4d62fhwt4a/geko/Event1.png',
-                'uploaded_image': '',
-                'participants': [],
-                'created_at': datetime.utcnow().isoformat()
-            },
-            {
-                'id': 3,
-                'title': 'Event 3',
-                'description': 'Beschreibung für Event 3',
-                'banner_url': 'https://link.storjshare.io/raw/jwtanqrv3dqklcksophmccbgrora/geko/event2.jpg',
-                'uploaded_image': '',
-                'participants': [],
-                'created_at': datetime.utcnow().isoformat()
-            },
-            {
-                'id': 4,
-                'title': 'Event 4',
-                'description': 'Beschreibung für Event 4',
-                'banner_url': 'https://link.storjshare.io/raw/juj6yfbpheluxs5uzwkfholsamrq/geko/Logo.png',
-                'uploaded_image': '',
-                'participants': [],
-                'created_at': datetime.utcnow().isoformat()
-            }
-        ]
+            })
         save_static_events(default_events)
         return default_events
 
@@ -265,22 +250,22 @@ def load_static_events():
             # Ensure we always have exactly 4 events
             while len(events) < 4:
                 next_id = len(events) + 1
-                # Default placeholder URLs for each event
-                placeholder_urls = [
-                    'https://link.storjshare.io/raw/julpadc66a57pal46igjl4azssja/geko/event0.png',
-                    'https://link.storjshare.io/raw/jvknoz7bbo5l45f5kp4d62fhwt4a/geko/Event1.png',
-                    'https://link.storjshare.io/raw/jwtanqrv3dqklcksophmccbgrora/geko/event2.jpg',
-                    'https://link.storjshare.io/raw/juj6yfbpheluxs5uzwkfholsamrq/geko/Logo.png'
-                ]
                 events.append({
                     'id': next_id,
                     'title': f'Event {next_id}',
                     'description': f'Beschreibung für Event {next_id}',
-                    'banner_url': placeholder_urls[next_id - 1] if next_id <= 4 else '',
+                    'banner_url': DEFAULT_IMAGES[next_id - 1] if next_id <= 4 else '',
+                    'default_image_url': DEFAULT_IMAGES[next_id - 1] if next_id <= 4 else '',
                     'uploaded_image': '',
                     'participants': [],
                     'created_at': datetime.utcnow().isoformat()
                 })
+
+            # Ensure existing events have default_image_url set if missing
+            for event in events[:4]:  # Only process first 4 events
+                if 'default_image_url' not in event:
+                    event['default_image_url'] = DEFAULT_IMAGES[event['id'] - 1]
+
             # Limit to exactly 4 events
             events = events[:4]
             return events
@@ -295,13 +280,29 @@ def save_static_events(events):
 
 
 def get_event_image_url(event):
-    """Get the image URL for an event, prioritizing uploaded image over banner_url"""
+    """
+    Get the image URL for an event with proper priority logic:
+    1. Uploaded image (highest priority)
+    2. Custom banner URL (if different from default)
+    3. Default image URL (fallback)
+    """
+    # Priority 1: Uploaded image file
     if event.get('uploaded_image') and os.path.exists(os.path.join(UPLOAD_FOLDER, event['uploaded_image'])):
         return f'/uploads/{event["uploaded_image"]}'
-    elif event.get('banner_url'):
-        return event['banner_url']
-    else:
-        return '/uploads/placeholder.png'  # Default placeholder
+
+    # Priority 2: Custom banner URL (if set and different from default)
+    banner_url = event.get('banner_url', '').strip()
+    default_url = event.get('default_image_url', '').strip()
+
+    if banner_url and banner_url != default_url:
+        return banner_url
+
+    # Priority 3: Default image URL
+    if default_url:
+        return default_url
+
+    # Final fallback
+    return '/uploads/placeholder.png'
 
 
 # -------------------- File Upload Routes --------------------
@@ -395,11 +396,14 @@ def reset_static_event(event_id):
     if not event:
         return jsonify({'error': 'Event not found'}), 404
 
+    # Get the default image URL for this event
+    default_image_url = event.get('default_image_url', '')
+
     # Reset to default values
     event.update({
         'title': f'Event {event_id}',
         'description': f'Beschreibung für Event {event_id}',
-        'banner_url': '',
+        'banner_url': default_image_url,  # Reset to default image URL
         'uploaded_image': '',
         'participants': [],
         'updated_at': datetime.utcnow().isoformat()

@@ -1,1 +1,42 @@
-[]
+[
+  {
+    "id": 1,
+    "title": "Event 1",
+    "description": "Beschreibung für Event 1",
+    "banner_url": "https://link.storjshare.io/raw/julpadc66a57pal46igjl4azssja/geko/event0.png",
+    "default_image_url": "https://link.storjshare.io/raw/julpadc66a57pal46igjl4azssja/geko/event0.png",
+    "uploaded_image": "",
+    "participants": [],
+    "created_at": "2024-01-01T00:00:00.000000"
+  },
+  {
+    "id": 2,
+    "title": "Event 2",
+    "description": "Beschreibung für Event 2",
+    "banner_url": "https://link.storjshare.io/raw/jvknoz7bbo5l45f5kp4d62fhwt4a/geko/Event1.png",
+    "default_image_url": "https://link.storjshare.io/raw/jvknoz7bbo5l45f5kp4d62fhwt4a/geko/Event1.png",
+    "uploaded_image": "",
+    "participants": [],
+    "created_at": "2024-01-01T00:00:00.000000"
+  },
+  {
+    "id": 3,
+    "title": "Event 3",
+    "description": "Beschreibung für Event 3",
+    "banner_url": "https://link.storjshare.io/raw/jwtanqrv3dqklcksophmccbgrora/geko/event2.jpg",
+    "default_image_url": "https://link.storjshare.io/raw/jwtanqrv3dqklcksophmccbgrora/geko/event2.jpg",
+    "uploaded_image": "",
+    "participants": [],
+    "created_at": "2024-01-01T00:00:00.000000"
+  },
+  {
+    "id": 4,
+    "title": "Event 4",
+    "description": "Beschreibung für Event 4",
+    "banner_url": "https://link.storjshare.io/raw/juj6yfbpheluxs5uzwkfholsamrq/geko/Logo.png",
+    "default_image_url": "https://link.storjshare.io/raw/juj6yfbpheluxs5uzwkfholsamrq/geko/Logo.png",
+    "uploaded_image": "",
+    "participants": [],
+    "created_at": "2024-01-01T00:00:00.000000"
+  }
+]
