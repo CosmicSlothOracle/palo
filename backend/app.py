@@ -1,5 +1,5 @@
-from api.events import events_bp
-from api.auth import auth_bp
+from .api.events import events_bp
+from .api.auth import auth_bp
 import os
 import json
 import jwt
