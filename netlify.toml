@@ -1,22 +1,22 @@
 [build]
-  # Build React frontend
-  command = "npm --prefix frontend install && npm --prefix frontend run build"
-  publish = "frontend/dist"
+  # Build React frontend and copy to docs, then deploy docs
+  command = "npm --prefix frontend install && npm --prefix frontend run build && mkdir -p docs/react && cp frontend/dist/kosge-events.js docs/react/kosge-events.js && python scripts/generate_chatbot_key.py && python scripts/inject_chatbot_script.py"
+  publish = "docs"
 
 # API calls go to Render backend
 
-# Admin panel redirect
+# Admin panel redirect to React app
 [[redirects]]
   from = "/admin"
-  to = "/index.html"
+  to = "/react-app/index.html"
   status = 200
 
-# SPA redirect - all routes go to React app
+# Keep SPA redirect last
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
 [build.environment]
-  # Ensure Node.js is available for build
-  NODE_VERSION = "18"
+  # Ensure Python is available for build helper scripts
+  PYTHON_VERSION = "3.10"
