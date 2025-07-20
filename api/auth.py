@@ -1,6 +1,5 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 import bcrypt
-from app import Config, generate_token, logger
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -20,19 +19,20 @@ def login():
             return jsonify({'error': 'Username and password required'}), 400
 
         # Check username
-        if username != Config.ADMIN_USERNAME:
-            logger.warning(f"Login attempt with invalid username: {username}")
+        if username != current_app.config['ADMIN_USERNAME']:
+            current_app.logger.warning(
+                f"Login attempt with invalid username: {username}")
             return jsonify({'error': 'Invalid credentials'}), 401
 
         # Check password
-        if not bcrypt.checkpw(password.encode('utf-8'), Config.ADMIN_PASSWORD_HASH.encode('utf-8')):
-            logger.warning(
+        if not bcrypt.checkpw(password.encode('utf-8'), current_app.config['ADMIN_PASSWORD_HASH'].encode('utf-8')):
+            current_app.logger.warning(
                 f"Login attempt with invalid password for user: {username}")
             return jsonify({'error': 'Invalid credentials'}), 401
 
         # Generate token
         token = generate_token(username)
-        logger.info(f"Successful login for user: {username}")
+        current_app.logger.info(f"Successful login for user: {username}")
 
         return jsonify({
             'success': True,
@@ -41,7 +41,7 @@ def login():
         }), 200
 
     except Exception as e:
-        logger.error(f"Login error: {str(e)}")
+        current_app.logger.error(f"Login error: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
 
@@ -64,3 +64,9 @@ def verify_token_endpoint():
         'valid': True,
         'user': username
     }), 200
+
+
+def generate_token(username: str) -> str:
+    """Import generate_token from app module"""
+    from app import generate_token as _generate_token
+    return _generate_token(username)

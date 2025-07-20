@@ -1,5 +1,3 @@
-from api.events import events_bp
-from api.auth import auth_bp
 import os
 import json
 import jwt
@@ -12,65 +10,68 @@ from flask import Flask, jsonify, request, send_from_directory, make_response
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import bcrypt
+from config import Config
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize Flask app
-app = Flask(__name__)
 
-# Environment-based configuration
+def create_app():
+    """Application Factory Pattern"""
+    app = Flask(__name__)
 
+    # Validate critical environment variables
+    if not Config.JWT_SECRET:
+        raise RuntimeError('JWT_SECRET environment variable is required')
 
-class Config:
-    # CORS Origins - Environment variable or default
-    CORS_ORIGINS = os.environ.get('CORS_ORIGINS',
-                                  'http://localhost:3000,https://kosge.netlify.app,https://kosge-frontend.netlify.app'
-                                  ).split(',')
+    # Configure CORS
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": Config.CORS_ORIGINS,
+            "methods": ["GET", "POST", "DELETE", "OPTIONS", "PUT"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "expose_headers": ["Content-Type", "Authorization"],
+            "supports_credentials": True
+        }
+    })
 
-    # Admin credentials
-    ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-    ADMIN_PASSWORD_HASH = os.environ.get('ADMIN_PASSWORD_HASH',
-                                         '$2b$12$ZCgWXzUdmVX.PnIfj4oeJOkX69Tu1rVZ51zGYe3kSloANnwMaTlBW'
-                                         )
+    # Ensure required directories exist
+    os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
+    os.makedirs(os.path.dirname(Config.EVENTS_FILE), exist_ok=True)
 
-    # JWT Configuration
-    JWT_SECRET = os.environ.get('JWT_SECRET')
-    JWT_ALGORITHM = 'HS256'
-    JWT_EXPIRATION_HOURS = int(os.environ.get('JWT_EXPIRATION_HOURS', '8'))
+    # Initialize data files if they don't exist
+    initialize_data_files()
 
-    # File upload settings
-    UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', 'uploads')
-    MAX_FILE_SIZE = int(os.environ.get('MAX_FILE_SIZE', '16777216'))  # 16MB
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    # Register blueprints AFTER app is created
+    from api.events import events_bp
+    from api.auth import auth_bp
 
-    # Data files
-    EVENTS_FILE = os.environ.get('EVENTS_FILE', 'data/events.json')
-    PARTICIPANTS_FILE = os.environ.get(
-        'PARTICIPANTS_FILE', 'data/participants.json')
+    app.register_blueprint(auth_bp, url_prefix='/api')
+    app.register_blueprint(events_bp, url_prefix='/api')
 
+    # Register routes
+    @app.route('/health')
+    def health_check():
+        """Health check endpoint for monitoring"""
+        return jsonify({
+            'status': 'healthy',
+            'timestamp': datetime.utcnow().isoformat(),
+            'version': '2.0.0'
+        })
 
-# Validate critical environment variables
-if not Config.JWT_SECRET:
-    raise RuntimeError('JWT_SECRET environment variable is required')
+    @app.after_request
+    def after_request(response):
+        """Add CORS headers to all responses"""
+        origin = request.headers.get('Origin')
+        if origin in Config.CORS_ORIGINS:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+        return response
 
-# Configure CORS
-CORS(app, resources={
-    r"/api/*": {
-        "origins": Config.CORS_ORIGINS,
-        "methods": ["GET", "POST", "DELETE", "OPTIONS", "PUT"],
-        "allow_headers": ["Content-Type", "Authorization"],
-        "expose_headers": ["Content-Type", "Authorization"],
-        "supports_credentials": True
-    }
-})
-
-# Ensure required directories exist
-os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(os.path.dirname(Config.EVENTS_FILE), exist_ok=True)
-
-# Initialize data files if they don't exist
+    return app
 
 
 def initialize_data_files():
@@ -131,9 +132,8 @@ def initialize_data_files():
         logger.info(
             f"Initialized participants file: {Config.PARTICIPANTS_FILE}")
 
+
 # JWT Helper Functions
-
-
 def generate_token(username: str) -> str:
     """Generate JWT token for authenticated user"""
     payload = {
@@ -176,9 +176,8 @@ def auth_required(f):
 
     return decorated
 
+
 # Data Helper Functions
-
-
 def load_events() -> List[Dict]:
     """Load events from JSON file"""
     try:
@@ -213,40 +212,8 @@ def allowed_file(filename: str) -> bool:
            filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
 
 
-# Initialize data files on startup
-initialize_data_files()
-
-# Health check endpoint
-
-
-@app.route('/health')
-def health_check():
-    """Health check endpoint for monitoring"""
-    return jsonify({
-        'status': 'healthy',
-        'timestamp': datetime.utcnow().isoformat(),
-        'version': '2.0.0'
-    })
-
-# CORS preflight handler
-
-
-@app.after_request
-def after_request(response):
-    """Add CORS headers to all responses"""
-    origin = request.headers.get('Origin')
-    if origin in Config.CORS_ORIGINS:
-        response.headers['Access-Control-Allow-Origin'] = origin
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-        response.headers['Access-Control-Allow-Credentials'] = 'true'
-    return response
-
-
-# Register blueprints
-
-app.register_blueprint(auth_bp, url_prefix='/api')
-app.register_blueprint(events_bp, url_prefix='/api')
+# Create the Flask app instance
+app = create_app()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))

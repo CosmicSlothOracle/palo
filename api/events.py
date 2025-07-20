@@ -1,11 +1,7 @@
 import os
 from datetime import datetime
-from flask import Blueprint, request, jsonify, send_from_directory
+from flask import Blueprint, request, jsonify, send_from_directory, current_app
 from werkzeug.utils import secure_filename
-from app import (
-    Config, auth_required, load_events, save_events,
-    get_event_image_url, allowed_file, logger
-)
 
 events_bp = Blueprint('events', __name__)
 
@@ -18,7 +14,8 @@ def get_events():
 
         # Ensure we always return exactly 4 events
         if len(events) < 4:
-            logger.warning(f"Only {len(events)} events found, expected 4")
+            current_app.logger.warning(
+                f"Only {len(events)} events found, expected 4")
 
         # Add display_image_url for each event
         for event in events:
@@ -30,7 +27,7 @@ def get_events():
         }), 200
 
     except Exception as e:
-        logger.error(f"Error loading events: {str(e)}")
+        current_app.logger.error(f"Error loading events: {str(e)}")
         return jsonify({'error': 'Failed to load events'}), 500
 
 
@@ -55,7 +52,7 @@ def get_event(event_id):
         }), 200
 
     except Exception as e:
-        logger.error(f"Error loading event {event_id}: {str(e)}")
+        current_app.logger.error(f"Error loading event {event_id}: {str(e)}")
         return jsonify({'error': 'Failed to load event'}), 500
 
 
@@ -89,7 +86,8 @@ def update_event(event_id):
 
         if save_events(events):
             event['display_image_url'] = get_event_image_url(event)
-            logger.info(f"Event {event_id} updated by {request.current_user}")
+            current_app.logger.info(
+                f"Event {event_id} updated by {request.current_user}")
             return jsonify({
                 'success': True,
                 'event': event
@@ -98,7 +96,7 @@ def update_event(event_id):
             return jsonify({'error': 'Failed to save event'}), 500
 
     except Exception as e:
-        logger.error(f"Error updating event {event_id}: {str(e)}")
+        current_app.logger.error(f"Error updating event {event_id}: {str(e)}")
         return jsonify({'error': 'Failed to update event'}), 500
 
 
@@ -119,10 +117,10 @@ def reset_event(event_id):
         # Remove uploaded image file if exists
         if event.get('uploaded_image'):
             old_path = os.path.join(
-                Config.UPLOAD_FOLDER, event['uploaded_image'])
+                current_app.config['UPLOAD_FOLDER'], event['uploaded_image'])
             if os.path.exists(old_path):
                 os.remove(old_path)
-                logger.info(f"Removed uploaded image: {old_path}")
+                current_app.logger.info(f"Removed uploaded image: {old_path}")
 
         # Reset to default values
         default_image_url = event.get('default_image_url', '')
@@ -137,7 +135,8 @@ def reset_event(event_id):
 
         if save_events(events):
             event['display_image_url'] = get_event_image_url(event)
-            logger.info(f"Event {event_id} reset by {request.current_user}")
+            current_app.logger.info(
+                f"Event {event_id} reset by {request.current_user}")
             return jsonify({
                 'success': True,
                 'event': event
@@ -146,7 +145,7 @@ def reset_event(event_id):
             return jsonify({'error': 'Failed to save event'}), 500
 
     except Exception as e:
-        logger.error(f"Error resetting event {event_id}: {str(e)}")
+        current_app.logger.error(f"Error resetting event {event_id}: {str(e)}")
         return jsonify({'error': 'Failed to reset event'}), 500
 
 
@@ -173,7 +172,7 @@ def get_participants(event_id):
         }), 200
 
     except Exception as e:
-        logger.error(
+        current_app.logger.error(
             f"Error loading participants for event {event_id}: {str(e)}")
         return jsonify({'error': 'Failed to load participants'}), 500
 
@@ -223,7 +222,8 @@ def add_participant(event_id):
         event['updated_at'] = datetime.utcnow().isoformat()
 
         if save_events(events):
-            logger.info(f"New participant {name} added to event {event_id}")
+            current_app.logger.info(
+                f"New participant {name} added to event {event_id}")
             return jsonify({
                 'success': True,
                 'participant': participant,
@@ -233,7 +233,8 @@ def add_participant(event_id):
             return jsonify({'error': 'Failed to save participant'}), 500
 
     except Exception as e:
-        logger.error(f"Error adding participant to event {event_id}: {str(e)}")
+        current_app.logger.error(
+            f"Error adding participant to event {event_id}: {str(e)}")
         return jsonify({'error': 'Failed to add participant'}), 500
 
 
@@ -286,7 +287,7 @@ def export_participants(event_id):
         return response, 200
 
     except Exception as e:
-        logger.error(
+        current_app.logger.error(
             f"Error exporting participants for event {event_id}: {str(e)}")
         return jsonify({'error': 'Failed to export participants'}), 500
 
@@ -295,9 +296,9 @@ def export_participants(event_id):
 def uploaded_file(filename):
     """Serve uploaded files"""
     try:
-        return send_from_directory(Config.UPLOAD_FOLDER, filename)
+        return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
     except Exception as e:
-        logger.error(f"Error serving file {filename}: {str(e)}")
+        current_app.logger.error(f"Error serving file {filename}: {str(e)}")
         return jsonify({'error': 'File not found'}), 404
 
 
@@ -321,7 +322,8 @@ def upload_event_image(event_id):
             original_filename = secure_filename(file.filename)
             file_extension = original_filename.rsplit('.', 1)[1].lower()
             filename = f'event_{event_id}_{datetime.utcnow().strftime("%Y%m%d_%H%M%S")}.{file_extension}'
-            filepath = os.path.join(Config.UPLOAD_FOLDER, filename)
+            filepath = os.path.join(
+                current_app.config['UPLOAD_FOLDER'], filename)
 
             # Save file
             file.save(filepath)
@@ -338,10 +340,10 @@ def upload_event_image(event_id):
             # Remove old uploaded image if exists
             if event.get('uploaded_image'):
                 old_path = os.path.join(
-                    Config.UPLOAD_FOLDER, event['uploaded_image'])
+                    current_app.config['UPLOAD_FOLDER'], event['uploaded_image'])
                 if os.path.exists(old_path):
                     os.remove(old_path)
-                    logger.info(f"Removed old image: {old_path}")
+                    current_app.logger.info(f"Removed old image: {old_path}")
 
             # Update event with new image
             event['uploaded_image'] = filename
@@ -349,7 +351,8 @@ def upload_event_image(event_id):
 
             if save_events(events):
                 image_url = get_event_image_url(event)
-                logger.info(f"Image uploaded for event {event_id}: {filename}")
+                current_app.logger.info(
+                    f"Image uploaded for event {event_id}: {filename}")
                 return jsonify({
                     'success': True,
                     'filename': filename,
@@ -361,11 +364,11 @@ def upload_event_image(event_id):
                 return jsonify({'error': 'Failed to save event'}), 500
 
         except Exception as e:
-            logger.error(
+            current_app.logger.error(
                 f"Error uploading image for event {event_id}: {str(e)}")
             return jsonify({'error': 'Failed to upload image'}), 500
 
-    allowed_types = ", ".join(Config.ALLOWED_EXTENSIONS)
+    allowed_types = ", ".join(current_app.config['ALLOWED_EXTENSIONS'])
     return jsonify({
         'error': f'Invalid file type. Allowed: {allowed_types}'
     }), 400
@@ -388,17 +391,17 @@ def remove_event_image(event_id):
         # Remove uploaded image file if exists
         if event.get('uploaded_image'):
             old_path = os.path.join(
-                Config.UPLOAD_FOLDER, event['uploaded_image'])
+                current_app.config['UPLOAD_FOLDER'], event['uploaded_image'])
             if os.path.exists(old_path):
                 os.remove(old_path)
-                logger.info(f"Removed image: {old_path}")
+                current_app.logger.info(f"Removed image: {old_path}")
             event['uploaded_image'] = ''
 
         event['updated_at'] = datetime.utcnow().isoformat()
 
         if save_events(events):
             event['display_image_url'] = get_event_image_url(event)
-            logger.info(f"Image removed from event {event_id}")
+            current_app.logger.info(f"Image removed from event {event_id}")
             return jsonify({
                 'success': True,
                 'event': event
@@ -407,5 +410,37 @@ def remove_event_image(event_id):
             return jsonify({'error': 'Failed to save event'}), 500
 
     except Exception as e:
-        logger.error(f"Error removing image from event {event_id}: {str(e)}")
+        current_app.logger.error(
+            f"Error removing image from event {event_id}: {str(e)}")
         return jsonify({'error': 'Failed to remove image'}), 500
+
+
+# Helper functions that need to be imported from app
+def auth_required(f):
+    """Import auth_required from app module"""
+    from app import auth_required as _auth_required
+    return _auth_required(f)
+
+
+def load_events():
+    """Import load_events from app module"""
+    from app import load_events as _load_events
+    return _load_events()
+
+
+def save_events(events):
+    """Import save_events from app module"""
+    from app import save_events as _save_events
+    return _save_events(events)
+
+
+def get_event_image_url(event):
+    """Import get_event_image_url from app module"""
+    from app import get_event_image_url as _get_event_image_url
+    return _get_event_image_url(event)
+
+
+def allowed_file(filename):
+    """Import allowed_file from app module"""
+    from app import allowed_file as _allowed_file
+    return _allowed_file(filename)
