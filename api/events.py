@@ -2,8 +2,34 @@ import os
 from datetime import datetime
 from flask import Blueprint, request, jsonify, send_from_directory, current_app
 from werkzeug.utils import secure_filename
+from functools import wraps
 
 events_bp = Blueprint('events', __name__)
+
+
+def auth_required(f):
+    """Decorator to protect endpoints with JWT authentication"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return jsonify({'error': 'Missing or invalid Authorization header'}), 401
+
+        token = auth_header[7:]  # Remove 'Bearer ' prefix
+        username = verify_token(token)
+        if not username:
+            return jsonify({'error': 'Invalid or expired token'}), 401
+
+        request.current_user = username
+        return f(*args, **kwargs)
+
+    return decorated
+
+
+def verify_token(token: str):
+    """Import verify_token from app module"""
+    from app import verify_token as _verify_token
+    return _verify_token(token)
 
 
 @events_bp.route('/events', methods=['GET'])
@@ -416,12 +442,6 @@ def remove_event_image(event_id):
 
 
 # Helper functions that need to be imported from app
-def auth_required(f):
-    """Import auth_required from app module"""
-    from app import auth_required as _auth_required
-    return _auth_required(f)
-
-
 def load_events():
     """Import load_events from app module"""
     from app import load_events as _load_events
