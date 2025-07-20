@@ -217,18 +217,45 @@ def save_participants(participants):
 def load_static_events():
     """Load static events data - always returns exactly 4 events"""
     if not os.path.exists(EVENTS_FILE):
-        # Initialize with 4 default events
-        default_events = []
-        for i in range(1, 5):
-            default_events.append({
-                'id': i,
-                'title': f'Event {i}',
-                'description': f'Beschreibung für Event {i}',
-                'banner_url': '',
-                'uploaded_image': '',  # Path to uploaded image file
+        # Initialize with 4 default events with placeholder images
+        default_events = [
+            {
+                'id': 1,
+                'title': 'Event 1',
+                'description': 'Beschreibung für Event 1',
+                'banner_url': 'https://link.storjshare.io/raw/julpadc66a57pal46igjl4azssja/geko/event0.png',
+                'uploaded_image': '',
                 'participants': [],
                 'created_at': datetime.utcnow().isoformat()
-            })
+            },
+            {
+                'id': 2,
+                'title': 'Event 2',
+                'description': 'Beschreibung für Event 2',
+                'banner_url': 'https://link.storjshare.io/raw/jvknoz7bbo5l45f5kp4d62fhwt4a/geko/Event1.png',
+                'uploaded_image': '',
+                'participants': [],
+                'created_at': datetime.utcnow().isoformat()
+            },
+            {
+                'id': 3,
+                'title': 'Event 3',
+                'description': 'Beschreibung für Event 3',
+                'banner_url': 'https://link.storjshare.io/raw/jwtanqrv3dqklcksophmccbgrora/geko/event2.jpg',
+                'uploaded_image': '',
+                'participants': [],
+                'created_at': datetime.utcnow().isoformat()
+            },
+            {
+                'id': 4,
+                'title': 'Event 4',
+                'description': 'Beschreibung für Event 4',
+                'banner_url': 'https://link.storjshare.io/raw/juj6yfbpheluxs5uzwkfholsamrq/geko/Logo.png',
+                'uploaded_image': '',
+                'participants': [],
+                'created_at': datetime.utcnow().isoformat()
+            }
+        ]
         save_static_events(default_events)
         return default_events
 
@@ -238,11 +265,18 @@ def load_static_events():
             # Ensure we always have exactly 4 events
             while len(events) < 4:
                 next_id = len(events) + 1
+                # Default placeholder URLs for each event
+                placeholder_urls = [
+                    'https://link.storjshare.io/raw/julpadc66a57pal46igjl4azssja/geko/event0.png',
+                    'https://link.storjshare.io/raw/jvknoz7bbo5l45f5kp4d62fhwt4a/geko/Event1.png',
+                    'https://link.storjshare.io/raw/jwtanqrv3dqklcksophmccbgrora/geko/event2.jpg',
+                    'https://link.storjshare.io/raw/juj6yfbpheluxs5uzwkfholsamrq/geko/Logo.png'
+                ]
                 events.append({
                     'id': next_id,
                     'title': f'Event {next_id}',
                     'description': f'Beschreibung für Event {next_id}',
-                    'banner_url': '',
+                    'banner_url': placeholder_urls[next_id - 1] if next_id <= 4 else '',
                     'uploaded_image': '',
                     'participants': [],
                     'created_at': datetime.utcnow().isoformat()
