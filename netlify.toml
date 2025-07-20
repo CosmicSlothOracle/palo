@@ -6,6 +6,7 @@
   command = """
     npm --prefix frontend install \
     && npm --prefix frontend run build \
+    && npm --prefix frontend run build:lib \
     && cp frontend/public/kosge-events.js docs/react/kosge-events.js \
     && npm --prefix netlify/functions install \
     && python scripts/generate_chatbot_key.py \
