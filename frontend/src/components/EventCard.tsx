@@ -58,9 +58,9 @@ const EventCard: React.FC<Props> = ({ event, onParticipate, onEdit, onDelete }) 
     <div className="bg-white shadow-lg rounded-lg overflow-hidden flex flex-col h-full">
       {/* Image with 4:3 aspect ratio */}
       <div className="w-full" style={{ aspectRatio: '4/3' }}>
-        <img
+      <img
           src={imageUrl}
-          alt={event.title}
+        alt={event.title}
           className="w-full h-full object-cover"
           onError={(e) => {
             // Fallback to placeholder if image fails to load
@@ -81,31 +81,31 @@ const EventCard: React.FC<Props> = ({ event, onParticipate, onEdit, onDelete }) 
           <div className="mt-auto">
             <div className="flex gap-2 mb-2">
               {onParticipate && (
-                <button
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm"
-                  onClick={onParticipate}
-                >
+            <button
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm"
+              onClick={onParticipate}
+            >
                   Teilnehmer anzeigen ({event.participants?.length || 0})
-                </button>
+            </button>
               )}
             </div>
             <div className="flex gap-2">
-              {onEdit && (
-                <button
+            {onEdit && (
+              <button
                   className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-3 rounded text-sm"
-                  onClick={onEdit}
-                >
-                  Bearbeiten
-                </button>
-              )}
-              {onDelete && (
-                <button
-                  className="bg-red-500 hover:bg-red-600 text-white py-2 px-3 rounded text-sm"
-                  onClick={onDelete}
-                >
+                onClick={onEdit}
+              >
+                Bearbeiten
+              </button>
+            )}
+            {onDelete && (
+              <button
+                className="bg-red-500 hover:bg-red-600 text-white py-2 px-3 rounded text-sm"
+                onClick={onDelete}
+              >
                   Reset
-                </button>
-              )}
+              </button>
+            )}
             </div>
           </div>
         ) : (
@@ -149,13 +149,13 @@ const EventCard: React.FC<Props> = ({ event, onParticipate, onEdit, onDelete }) 
                     disabled={submitting}
                   />
                 </div>
-                <button
+          <button
                   type="submit"
                   disabled={submitting || !name.trim() || !email.trim()}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
+          >
                   {submitting ? 'Wird gesendet...' : 'Teilnehmen'}
-                </button>
+          </button>
               </form>
             )}
           </div>
